@@ -2,10 +2,9 @@
  
 precision highp float;
  
+smooth in vec4 vertex_color;
 out vec4 color;
  
 void main(void) {
-  float lerpValue = gl_FragCoord.y / 360.0f;
-  color = mix(vec4(1.0f, 1.0f, 1.0f, 0.5f),
-    vec4(0.2f, 0.2f, 0.2f, 0.5f), lerpValue);
+  color = vertex_color;
 }

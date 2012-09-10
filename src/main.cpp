@@ -5,16 +5,17 @@ GLuint triangleIBO;
 GLuint shaderProgram;
 GLchar *vertexSource, *fragmentSource;
 GLuint vertexShader, fragmentShader;
-const unsigned int shaderAttribute = 0;
+const unsigned int attribute_position = 0;
+const unsigned int attribute_color = 1;
 const unsigned int NUM_OF_VERTICES_IN_DATA = 6;
-const unsigned int NUM_OF_INDICES_IN_DATA = 8;
-float data[6][3] = {
-  {  0.f,   0.5f, 0.f },
-  { -0.5f, -0.5f, 0.f },
-  {  0.5f, -0.5f, 0.f },
-  {  0.5f,  1.f,  0.f },
-  {  0.f,   0.f,  0.f },
-  {  1.f,   0.f,  0.f }
+const unsigned int INDICES = 3;
+float data[] = {
+   0.0f,    0.5f, 0.0f, 1.0f,
+   0.5f, -0.366f, 0.0f, 1.0f,
+  -0.5f, -0.366f, 0.0f, 1.0f,
+   1.0f,    0.0f, 0.0f, 1.0f,
+   0.0f,    1.0f, 0.0f, 1.0f,
+   0.0f,    0.0f, 1.0f, 1.0f,
 };
 
 
@@ -22,15 +23,17 @@ float data[6][3] = {
 GLvoid initialize() {
   glGenBuffers(1, &triangleVBO);
   glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
-  glBufferData(GL_ARRAY_BUFFER, NUM_OF_VERTICES_IN_DATA * 3 * sizeof(float), data, GL_STATIC_DRAW);
-  glVertexAttribPointer(shaderAttribute, 3, GL_FLOAT, GL_FALSE, 0, 0);
-  glEnableVertexAttribArray(shaderAttribute);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
+  glEnableVertexAttribArray(attribute_position);
+  glEnableVertexAttribArray(attribute_color);
+  glVertexAttribPointer(attribute_position, 4, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribPointer(attribute_color, 4, GL_FLOAT, GL_FALSE, 0, (void *)48);
   glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
 
-  GLuint indices[] = { 0, 1, 2, 2, 3, 3, 4, 5 };
+  GLuint indices[] = { 0, 1, 2 };
   glGenBuffers(1, &triangleIBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleIBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, NUM_OF_INDICES_IN_DATA * sizeof(GLuint), indices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
   // delete indices;
 
   vertexSource = filetobuffer("shader.vert");
@@ -45,7 +48,7 @@ GLvoid initialize() {
   shaderProgram = glCreateProgram();
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, fragmentShader);
-  glBindAttribLocation(shaderProgram, shaderAttribute, "position");
+  // glBindAttribLocation(shaderProgram, attribute_position, "position");
   glLinkProgram(shaderProgram);
 }
 
@@ -57,7 +60,7 @@ GLvoid render() {
   glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_BLEND);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glDrawElements(GL_TRIANGLE_STRIP, NUM_OF_INDICES_IN_DATA, GL_UNSIGNED_INT, (void *)0);
+  glDrawElements(GL_TRIANGLE_STRIP, INDICES, GL_UNSIGNED_INT, (void *)0);
 }
 
 
