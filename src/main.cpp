@@ -5,6 +5,7 @@ GLuint triangleIBO;
 GLuint shaderProgram;
 GLchar *vertexSource, *fragmentSource;
 GLuint vertexShader, fragmentShader;
+GLuint offsetLocation;
 const unsigned int attribute_position = 0;
 const unsigned int attribute_color = 1;
 const unsigned int NUM_OF_VERTICES_IN_DATA = 6;
@@ -36,6 +37,7 @@ GLvoid initialize() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
   // delete indices;
 
+
   vertexSource = filetobuffer("shader.vert");
   fragmentSource = filetobuffer("shader.frag");
   vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -50,12 +52,15 @@ GLvoid initialize() {
   glAttachShader(shaderProgram, fragmentShader);
   // glBindAttribLocation(shaderProgram, attribute_position, "position");
   glLinkProgram(shaderProgram);
+
+  offsetLocation = glGetUniformLocation(shaderProgram, "offset");
 }
 
 
 
 GLvoid render() {
   glUseProgram(shaderProgram);
+  glUniform2f(offsetLocation, (float)SDL_GetTicks() / 1000.0f, 0.0f);
   glClearColor(0., 0., 0., 1.);
   glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_BLEND);
