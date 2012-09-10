@@ -5,7 +5,7 @@ GLuint triangleIBO;
 GLuint shaderProgram;
 GLchar *vertexSource, *fragmentSource;
 GLuint vertexShader, fragmentShader;
-GLuint offsetLocation;
+GLuint time_uniform;
 const unsigned int attribute_position = 0;
 const unsigned int attribute_color = 1;
 const unsigned int NUM_OF_VERTICES_IN_DATA = 6;
@@ -53,14 +53,14 @@ GLvoid initialize() {
   // glBindAttribLocation(shaderProgram, attribute_position, "position");
   glLinkProgram(shaderProgram);
 
-  offsetLocation = glGetUniformLocation(shaderProgram, "offset");
+  time_uniform = glGetUniformLocation(shaderProgram, "time");
 }
 
 
 
 GLvoid render() {
   glUseProgram(shaderProgram);
-  glUniform2f(offsetLocation, (float)SDL_GetTicks() / 1000.0f, 0.0f);
+  glUniform1f(time_uniform, (float)SDL_GetTicks() / 1000.0f);
   glClearColor(0., 0., 0., 1.);
   glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_BLEND);
