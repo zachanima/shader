@@ -6,14 +6,26 @@ GLuint shaderProgram;
 GLchar *vertexSource, *fragmentSource;
 GLuint vertexShader, fragmentShader;
 GLuint time_uniform;
+GLuint perspective_uniform;
 const unsigned int attribute_position = 0;
 const unsigned int attribute_color = 1;
-const unsigned int NUM_OF_VERTICES_IN_DATA = 6;
-const unsigned int INDICES = 3;
+const unsigned int INDICES = 13;
 float data[] = {
-   0.0f,    0.5f, 0.0f, 1.0f,
-   0.5f, -0.366f, 0.0f, 1.0f,
-  -0.5f, -0.366f, 0.0f, 1.0f,
+   0.0f,    0.5f, -1.5f, 1.0f,
+   0.5f, -0.366f, -1.5f, 1.0f,
+  -0.5f, -0.366f, -1.5f, 1.0f,
+   0.0f,    0.5f, -2.0f, 1.0f,
+   0.5f, -0.366f, -2.0f, 1.0f,
+  -0.5f, -0.366f, -2.0f, 1.0f,
+   0.0f,    0.5f, -2.5f, 1.0f,
+   0.5f, -0.366f, -2.5f, 1.0f,
+  -0.5f, -0.366f, -2.5f, 1.0f,
+   1.0f,    0.0f, 0.0f, 1.0f,
+   0.0f,    1.0f, 0.0f, 1.0f,
+   0.0f,    0.0f, 1.0f, 1.0f,
+   1.0f,    0.0f, 0.0f, 1.0f,
+   0.0f,    1.0f, 0.0f, 1.0f,
+   0.0f,    0.0f, 1.0f, 1.0f,
    1.0f,    0.0f, 0.0f, 1.0f,
    0.0f,    1.0f, 0.0f, 1.0f,
    0.0f,    0.0f, 1.0f, 1.0f,
@@ -28,10 +40,10 @@ GLvoid initialize() {
   glEnableVertexAttribArray(attribute_position);
   glEnableVertexAttribArray(attribute_color);
   glVertexAttribPointer(attribute_position, 4, GL_FLOAT, GL_FALSE, 0, 0);
-  glVertexAttribPointer(attribute_color, 4, GL_FLOAT, GL_FALSE, 0, (void *)48);
+  glVertexAttribPointer(attribute_color, 4, GL_FLOAT, GL_FALSE, 0, (void *)144);
   glBindBuffer(GL_ARRAY_BUFFER, triangleVBO);
 
-  GLuint indices[] = { 0, 1, 2 };
+  GLuint indices[] = { 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8 };
   glGenBuffers(1, &triangleIBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, triangleIBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
@@ -54,6 +66,21 @@ GLvoid initialize() {
   glLinkProgram(shaderProgram);
 
   time_uniform = glGetUniformLocation(shaderProgram, "time");
+  perspective_uniform = glGetUniformLocation(shaderProgram, "perspective");
+  const float frustum = 1.0f;
+  const float znear = 0.5f;
+  const float zfar = 3.0f;
+  float matrix[16];
+  memset(matrix, 0, sizeof(float) * 16);
+  matrix[0] = frustum / ((float)W / (float)H);
+  matrix[5] = frustum;
+  matrix[10] = (zfar + znear) / (znear - zfar);
+  matrix[14] = (2 * zfar * znear) / (znear - zfar);
+  matrix[11] = -1.0f;
+
+  glUseProgram(shaderProgram);
+  glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, matrix);
+  glUseProgram(0);
 }
 
 
@@ -63,8 +90,8 @@ GLvoid render() {
   glUniform1f(time_uniform, (float)SDL_GetTicks() / 1000.0f);
   glClearColor(0., 0., 0., 1.);
   glClear(GL_COLOR_BUFFER_BIT);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
   glDrawElements(GL_TRIANGLE_STRIP, INDICES, GL_UNSIGNED_INT, (void *)0);
 }
 
