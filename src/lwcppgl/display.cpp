@@ -25,43 +25,5 @@ void Display::create(int width, int height) {
 
 void Display::update() {
   Keyboard::update();
-
-  glFlush();
   SDL_GL_SwapBuffers();
-
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glLoadIdentity();
-
-  Display::orthogonal();
-}
-
-void Display::orthogonal() {
-  glViewport(0, 0, width, height);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  gluOrtho2D(0, width, height, 0);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  glDisable(GL_DEPTH_TEST);
-}
-
-void Display::perspective() {
-  const double FOV = 45.0;
-  const double ASPECT = static_cast<double>(width) / static_cast<double>(height);
-  const double ZNEAR = 0.0000152587890625;
-  const double ZFAR = 65536.;
-
-  glViewport(0, 0, width, height);
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-
-  gluPerspective(FOV, ASPECT, ZNEAR, ZFAR);
-
-  glMatrixMode(GL_MODELVIEW);
-  glLoadIdentity();
-
-  glEnable(GL_DEPTH_TEST);
 }
