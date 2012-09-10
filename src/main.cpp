@@ -45,7 +45,7 @@ GLvoid initialize() {
   shaderProgram = glCreateProgram();
   glAttachShader(shaderProgram, vertexShader);
   glAttachShader(shaderProgram, fragmentShader);
-  glBindAttribLocation(shaderProgram, shaderAttribute, "in_Position");
+  glBindAttribLocation(shaderProgram, shaderAttribute, "position");
   glLinkProgram(shaderProgram);
 }
 

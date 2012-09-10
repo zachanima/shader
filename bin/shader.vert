@@ -1,8 +1,7 @@
-#version 150
+#version 420
  
-// in_Position was bound to attribute index 0("shaderAtribute")
-in vec3 in_Position;
+in vec3 position;
  
 void main(void) {
-  gl_Position = vec4(in_Position.x, in_Position.y, in_Position.z, 1.0);
+  gl_Position = vec4(position, 1.0f);
 }
