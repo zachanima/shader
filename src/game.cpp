@@ -14,15 +14,15 @@ GLvoid Game::initialize() {
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
   GLfloat data[] = {
-     0.0f,    0.5f, -1.5f, 1.0f,
-     0.5f, -0.366f, -1.5f, 1.0f,
-    -0.5f, -0.366f, -1.5f, 1.0f,
-     0.0f,    0.5f, -2.0f, 1.0f,
-     0.5f, -0.366f, -2.0f, 1.0f,
-    -0.5f, -0.366f, -2.0f, 1.0f,
-     0.0f,    0.5f, -2.5f, 1.0f,
-     0.5f, -0.366f, -2.5f, 1.0f,
-    -0.5f, -0.366f, -2.5f, 1.0f,
+     0.0f,    0.5f, -1.5f,
+     0.5f, -0.366f, -1.5f,
+    -0.5f, -0.366f, -1.5f,
+     0.0f,    0.5f, -2.0f,
+     0.5f, -0.366f, -2.0f,
+    -0.5f, -0.366f, -2.0f,
+     0.0f,    0.5f, -2.5f,
+     0.5f, -0.366f, -2.5f,
+    -0.5f, -0.366f, -2.5f
   };
   GLuint indices[] = { 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8 };
   const GLfloat frustum = 1.0f;
@@ -72,7 +72,7 @@ GLvoid Game::initialize() {
   glBindVertexArray(vao);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glEnableVertexAttribArray(ATTR_POSITION);
-  glVertexAttribPointer(ATTR_POSITION, 4, GL_FLOAT, GL_FALSE, 0, 0);
+  glVertexAttribPointer(ATTR_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glBindVertexArray(0);
 }
