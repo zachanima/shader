@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-GLuint Game::VAO;
+GLuint Game::vao;
 GLuint Game::program;
 GLuint Game::time_uniform;
 const GLuint Game::INDICES = 13;
@@ -9,7 +9,7 @@ const GLuint Game::INDICES = 13;
 
 GLvoid Game::initialize() {
   const unsigned int ATTR_POSITION = 0, ATTR_COLOR = 1;
-  GLuint VBO, IBO;
+  GLuint vbo, ibo;
   GLuint perspective_uniform;
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
@@ -40,18 +40,13 @@ GLvoid Game::initialize() {
   GLfloat matrix[16];
 
   // Initialize vertex buffer object.
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(data), data, GL_STATIC_DRAW);
-  glEnableVertexAttribArray(ATTR_POSITION);
-  glEnableVertexAttribArray(ATTR_COLOR);
-  glVertexAttribPointer(ATTR_POSITION, 4, GL_FLOAT, GL_FALSE, 0, 0);
-  glVertexAttribPointer(ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid *)144);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
   // Initialize index buffer object.
-  glGenBuffers(1, &IBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
 
   // Initialize shaders.
@@ -82,14 +77,14 @@ GLvoid Game::initialize() {
   glUseProgram(0);
 
   // Initialize vertex array object.
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
   glEnableVertexAttribArray(ATTR_POSITION);
   glEnableVertexAttribArray(ATTR_COLOR);
   glVertexAttribPointer(ATTR_POSITION, 4, GL_FLOAT, GL_FALSE, 0, 0);
   glVertexAttribPointer(ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid *)144);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glBindVertexArray(0);
 }
 
@@ -103,7 +98,7 @@ GLvoid Game::render() {
   glDepthFunc(GL_LEQUAL);
 
   glUseProgram(program);
-  glBindVertexArray(VAO);
+  glBindVertexArray(vao);
 
   glUniform1f(time_uniform, (float)SDL_GetTicks() / 1000.0f);
   glDrawElements(GL_TRIANGLE_STRIP, INDICES, GL_UNSIGNED_INT, (void *)0);

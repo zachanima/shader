@@ -14,7 +14,7 @@ class Game {
     static GLvoid render();
 
   private:
-    static GLuint VAO;
+    static GLuint vao;
     static GLuint program;
     static GLuint time_uniform;
     static const GLuint INDICES;
