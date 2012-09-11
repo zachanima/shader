@@ -17,7 +17,7 @@ class Game {
     static GLuint VAO;
     static GLuint program;
     static GLuint time_uniform;
-    static const unsigned int INDICES;
+    static const GLuint INDICES;
 };
 
 #endif // GAME_HPP

@@ -3,7 +3,7 @@
 GLuint Game::VAO;
 GLuint Game::program;
 GLuint Game::time_uniform;
-const unsigned int Game::INDICES = 13;
+const GLuint Game::INDICES = 13;
 
 
 
@@ -13,7 +13,7 @@ GLvoid Game::initialize() {
   GLuint perspective_uniform;
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
-  float data[] = {
+  GLfloat data[] = {
      0.0f,    0.5f, -1.5f, 1.0f,
      0.5f, -0.366f, -1.5f, 1.0f,
     -0.5f, -0.366f, -1.5f, 1.0f,
@@ -33,6 +33,11 @@ GLvoid Game::initialize() {
      0.0f,    1.0f, 0.0f, 1.0f,
      0.0f,    0.0f, 1.0f, 1.0f,
   };
+  GLuint indices[] = { 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8 };
+  const GLfloat frustum = 1.0f;
+  const GLfloat znear = 0.5f;
+  const GLfloat zfar = 10.0f;
+  GLfloat matrix[16];
 
   // Initialize vertex buffer object.
   glGenBuffers(1, &VBO);
@@ -41,11 +46,10 @@ GLvoid Game::initialize() {
   glEnableVertexAttribArray(ATTR_POSITION);
   glEnableVertexAttribArray(ATTR_COLOR);
   glVertexAttribPointer(ATTR_POSITION, 4, GL_FLOAT, GL_FALSE, 0, 0);
-  glVertexAttribPointer(ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, (void *)144);
+  glVertexAttribPointer(ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid *)144);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
   // Initialize index buffer object.
-  GLuint indices[] = { 0, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6, 7, 8 };
   glGenBuffers(1, &IBO);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), indices, GL_STATIC_DRAW);
@@ -67,12 +71,8 @@ GLvoid Game::initialize() {
   // Initialize uniforms.
   time_uniform = glGetUniformLocation(program, "time");
   perspective_uniform = glGetUniformLocation(program, "perspective");
-  const float frustum = 1.0f;
-  const float znear = 0.5f;
-  const float zfar = 10.0f;
-  float matrix[16];
-  memset(matrix, 0, sizeof(float) * 16);
-  matrix[0] = frustum / ((float)WIDTH / (float)HEIGHT);
+  memset(matrix, 0, sizeof(GLfloat) * 16);
+  matrix[0] = frustum / ((GLfloat)WIDTH / (GLfloat)HEIGHT);
   matrix[5] = frustum;
   matrix[10] = (zfar + znear) / (znear - zfar);
   matrix[14] = (2 * zfar * znear) / (znear - zfar);
@@ -88,7 +88,7 @@ GLvoid Game::initialize() {
   glEnableVertexAttribArray(ATTR_POSITION);
   glEnableVertexAttribArray(ATTR_COLOR);
   glVertexAttribPointer(ATTR_POSITION, 4, GL_FLOAT, GL_FALSE, 0, 0);
-  glVertexAttribPointer(ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, (void *)144);
+  glVertexAttribPointer(ATTR_COLOR, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid *)144);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
   glBindVertexArray(0);
 }
