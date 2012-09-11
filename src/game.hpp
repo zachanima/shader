@@ -1,12 +1,13 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#define WIDTH (1280)
-#define HEIGHT (720)
-
 #include "lwcppgl/display.hpp"
 
 #include "source.hpp"
+#include "quadtree.hpp"
+
+#define WIDTH (1280)
+#define HEIGHT (720)
 
 class Game {
   public:
@@ -17,7 +18,7 @@ class Game {
     static GLuint vao;
     static GLuint program;
     static GLuint time_uniform;
-    static const GLuint INDICES;
+    static Quadtree *quadtree;
 };
 
 #endif // GAME_HPP
