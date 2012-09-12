@@ -21,11 +21,12 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2) {
     }
   }
 
-  // Spherize front face.
+  // Spherize front face, and apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
     const GLfloat x2 = vs[v].r[0] * vs[v].r[0];
     const GLfloat y2 = vs[v].r[1] * vs[v].r[1];
     const GLfloat z2 = vs[v].r[2] * vs[v].r[2];
+    const GLfloat noise = simplexNoise(16, 0.5f, 0.125f, vs[v].r[0], vs[v].r[1], vs[v].r[2], 0.f) + 1.f;
     vs[v].r[0] *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f);
     vs[v].r[1] *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f);
     vs[v].r[2] *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f);
@@ -65,7 +66,7 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::update(GLfloat x, GLfloat y, GLfloat z) {
-  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 16.f; 
+  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
 
   if (split) {
     if (children[0] == NULL) {

@@ -6,6 +6,7 @@
 #include "lwcppgl/display.hpp"
 
 #include "vertex.hpp"
+#include "simplex.hpp"
 
 #define CHUNK_SIZE (16)
 #define VERTICES_PER_SIDE (CHUNK_SIZE + 1)
