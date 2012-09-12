@@ -57,11 +57,11 @@ GLvoid Game::update() {
   ticks = SDL_GetTicks();
   if (Keyboard::isKeyDown(KEY_W)) {
     quadtree->update(camera[0], camera[1], camera[2]);
-    camera[2] -= 0.0005f * Quadtree::distance * delta;
+    camera[2] -= 0.001f * Quadtree::distance * delta;
   }
   if (Keyboard::isKeyDown(KEY_S)) {
     quadtree->update(camera[0], camera[1], camera[2]);
-    camera[2] += 0.0005f * Quadtree::distance * delta;
+    camera[2] += 0.001f * Quadtree::distance * delta;
   }
 
   Quadtree::distance = 65536.0f;
