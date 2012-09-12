@@ -60,7 +60,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
     turbulence.SetSourceModule(0, select);
     turbulence.SetFrequency(4.0f);
     turbulence.SetPower(0.125f);
-    const GLfloat noise = turbulence.GetValue(vs[v].r[0] * 2.f, vs[v].r[1] * 2.f, vs[v].r[2] * 2.f) * 0.03125f + 1.f;
+    const GLfloat noise = turbulence.GetValue(vs[v].r[0] * 2.f, vs[v].r[1] * 2.f, vs[v].r[2] * 2.f) * 0.016125f + 1.f;
     vs[v].r[0] *= noise;
     vs[v].r[1] *= noise;
     vs[v].r[2] *= noise;
