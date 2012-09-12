@@ -45,8 +45,12 @@ GLvoid Game::initialize() {
   glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, matrix);
   glUseProgram(0);
 
+  // Initialize noise.
+  Noise::initialize();
+
   // Initialize quadtree.
   quadtree = new Quadtree(-1.f, -1.f, 1.f, 1.f, 16);
+  quadtree->update(camera[0], camera[1], camera[2]);
 }
 
 

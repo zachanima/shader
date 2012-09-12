@@ -3,6 +3,7 @@
 
 #include "lwcppgl/display.hpp"
 
+#include "noise.hpp"
 #include "source.hpp"
 #include "quadtree.hpp"
 
