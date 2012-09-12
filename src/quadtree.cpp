@@ -29,9 +29,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2) {
     const GLfloat y2 = vs[v].r[1] * vs[v].r[1];
     const GLfloat z2 = vs[v].r[2] * vs[v].r[2];
     const GLfloat noise = simplexNoise(16, 0.5f, 0.125f, vs[v].r[0], vs[v].r[1], vs[v].r[2], 0.f) + 1.f;
-    vs[v].r[0] *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f);
-    vs[v].r[1] *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f);
-    vs[v].r[2] *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f);
+    vs[v].r[0] *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f) * noise;
+    vs[v].r[1] *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f) * noise;
+    vs[v].r[2] *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f) * noise;
   }
 
   // Initialize vertex buffer object.
