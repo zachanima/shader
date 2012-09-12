@@ -56,13 +56,15 @@ GLvoid Game::update() {
   const GLuint delta = SDL_GetTicks() - ticks;
   ticks = SDL_GetTicks();
   if (Keyboard::isKeyDown(KEY_W)) {
-    camera[2] -= 0.0005f * delta * (camera[2] - 1.f);
     quadtree->update(camera[0], camera[1], camera[2]);
+    camera[2] -= 0.0005f * Quadtree::distance * delta;
   }
   if (Keyboard::isKeyDown(KEY_S)) {
-    camera[2] += 0.0005f * delta * (camera[2] - 1.f);
     quadtree->update(camera[0], camera[1], camera[2]);
+    camera[2] += 0.0005f * Quadtree::distance * delta;
   }
+
+  Quadtree::distance = 65536.0f;
 }
 
 

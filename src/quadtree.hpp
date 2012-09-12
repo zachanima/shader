@@ -15,6 +15,7 @@
 
 class Quadtree {
   public:
+    static GLfloat distance;
     Quadtree(GLfloat, GLfloat, GLfloat, GLfloat);
     ~Quadtree();
     GLvoid update(GLfloat, GLfloat, GLfloat);

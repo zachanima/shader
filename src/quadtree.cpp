@@ -1,5 +1,7 @@
 #include "quadtree.hpp"
 
+GLfloat Quadtree::distance = 0.f;
+
 Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2) {
   const GLfloat L = (a2 - a1) / CHUNK_SIZE;
 
@@ -85,6 +87,10 @@ GLvoid Quadtree::update(GLfloat x, GLfloat y, GLfloat z) {
     children[1] = NULL;
     children[2] = NULL;
     children[3] = NULL;
+  }
+
+  if (distance2(x, y, z) < distance * distance) {
+    distance = sqrt(distance2(x, y, z));
   }
 }
 
