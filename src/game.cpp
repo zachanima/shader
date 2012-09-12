@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-GLfloat Game::camera[3] = { 0.f, 0.001f, 4.f };
+GLfloat Game::camera[3] = { -0.5f, 0.5f, 4.f };
 GLuint Game::program;
 GLuint Game::camera_uniform;
 GLuint Game::time_uniform;

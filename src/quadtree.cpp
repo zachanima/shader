@@ -23,17 +23,42 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2) {
     }
   }
 
-  // Spherize front face, and apply noise.
+  // Spherize front face.
   for (GLuint v = 0; v < VERTICES; v++) {
-    noise::module::RidgedMulti ridged;
-    ridged.SetOctaveCount(16);
     const GLfloat x2 = vs[v].r[0] * vs[v].r[0];
     const GLfloat y2 = vs[v].r[1] * vs[v].r[1];
     const GLfloat z2 = vs[v].r[2] * vs[v].r[2];
     vs[v].r[0] *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f);
     vs[v].r[1] *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f);
     vs[v].r[2] *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f);
-    const GLfloat noise = ridged.GetValue(vs[v].r[0], vs[v].r[1], vs[v].r[2]) * 0.0625f + 1.f;
+  }
+
+  // Apply noise.
+  for (GLuint v = 0; v < VERTICES; v++) {
+    noise::module::RidgedMulti ridged;
+    noise::module::Billow billow;
+    noise::module::ScaleBias scalebias;
+    noise::module::Perlin perlin;
+    noise::module::Select select;
+    noise::module::Turbulence turbulence;
+    ridged.SetOctaveCount(20);
+    billow.SetFrequency(2.f);
+    billow.SetOctaveCount(16);
+    scalebias.SetSourceModule(0, billow);
+    scalebias.SetScale(0.125f);
+    scalebias.SetBias(-0.75f);
+    perlin.SetOctaveCount(16);
+    perlin.SetFrequency(0.5f);
+    perlin.SetPersistence(0.25f);
+    select.SetSourceModule(0, scalebias);
+    select.SetSourceModule(1, ridged);
+    select.SetControlModule(perlin);
+    select.SetBounds(0.0f, 1000.0f);
+    select.SetEdgeFalloff(0.125f);
+    turbulence.SetSourceModule(0, select);
+    turbulence.SetFrequency(4.0f);
+    turbulence.SetPower(0.125f);
+    const GLfloat noise = turbulence.GetValue(vs[v].r[0] * 2.f, vs[v].r[1] * 2.f, vs[v].r[2] * 2.f) * 0.03125f + 1.f;
     vs[v].r[0] *= noise;
     vs[v].r[1] *= noise;
     vs[v].r[2] *= noise;

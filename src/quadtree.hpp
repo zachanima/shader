@@ -29,6 +29,7 @@ class Quadtree {
     GLuint ibo;
     GLvoid divide();
     GLfloat distance2(GLfloat, GLfloat, GLfloat);
+    GLfloat noise(GLfloat, GLfloat, GLfloat);
 };
 
 #endif // QUADTREE_HPP
