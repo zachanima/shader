@@ -2,7 +2,7 @@
 
 GLfloat Quadtree::distance = 0.f;
 
-Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2) {
+Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level) {
   const GLfloat L = (a2 - a1) / CHUNK_SIZE;
 
   box[0] = a1;
@@ -14,6 +14,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2) {
   children[1] = NULL;
   children[2] = NULL;
   children[3] = NULL;
+
+  this->level = level - 1;
 
   // Generate front face.
   size_t v = 0;
@@ -98,16 +100,18 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::update(GLfloat x, GLfloat y, GLfloat z) {
-  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
+  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 8.f; 
 
   if (split) {
-    if (children[0] == NULL) {
+    if (children[0] == NULL && level > 0) {
       divide();
     }
-    children[0]->update(x, y, z);
-    children[1]->update(x, y, z);
-    children[2]->update(x, y, z);
-    children[3]->update(x, y, z);
+    if (children[0] != NULL) {
+      children[0]->update(x, y, z);
+      children[1]->update(x, y, z);
+      children[2]->update(x, y, z);
+      children[3]->update(x, y, z);
+    }
   } else if (children[0] != NULL) {
     delete children[0];
     delete children[1];
@@ -146,10 +150,10 @@ GLvoid Quadtree::render() {
 GLvoid Quadtree::divide() {
   GLfloat ca = 0.5f * (box[0] + box[2]); // Center A.
   GLfloat cb = 0.5f * (box[1] + box[3]); // Center B.
-  children[0] = new Quadtree(box[0], box[1], ca,     cb);
-  children[1] = new Quadtree(ca,     box[1], box[2], cb);
-  children[2] = new Quadtree(box[0], cb,     ca,     box[3]);
-  children[3] = new Quadtree(ca,     cb,     box[2], box[3]);
+  children[0] = new Quadtree(box[0], box[1], ca,     cb, level);
+  children[1] = new Quadtree(ca,     box[1], box[2], cb, level);
+  children[2] = new Quadtree(box[0], cb,     ca,     box[3], level);
+  children[3] = new Quadtree(ca,     cb,     box[2], box[3], level);
 }
 
 

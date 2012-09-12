@@ -46,7 +46,7 @@ GLvoid Game::initialize() {
   glUseProgram(0);
 
   // Initialize quadtree.
-  quadtree = new Quadtree(-1.f, -1.f, 1.f, 1.f);
+  quadtree = new Quadtree(-1.f, -1.f, 1.f, 1.f, 16);
 }
 
 

@@ -16,7 +16,7 @@
 class Quadtree {
   public:
     static GLfloat distance;
-    Quadtree(GLfloat, GLfloat, GLfloat, GLfloat);
+    Quadtree(GLfloat, GLfloat, GLfloat, GLfloat, GLuint);
     ~Quadtree();
     GLvoid update(GLfloat, GLfloat, GLfloat);
     GLvoid render();
@@ -25,6 +25,7 @@ class Quadtree {
     Vertex vs[VERTICES];
     GLfloat box[4];
     Quadtree *children[4];
+    GLuint level;
     GLuint vbo;
     GLuint ibo;
     GLvoid divide();
