@@ -56,7 +56,6 @@ GLvoid Game::render() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_CULL_FACE);
-  glCullFace(GL_BACK);
 
   glUseProgram(program);
   glUniform1f(time_uniform, (GLfloat)SDL_GetTicks() / 1000.0f);
