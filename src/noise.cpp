@@ -1,11 +1,11 @@
 #include "noise.hpp"
 
-noise::module::RidgedMulti Noise::ridged;
-noise::module::Billow Noise::billow;
-noise::module::ScaleBias Noise::scalebias;
-noise::module::Perlin Noise::perlin;
-noise::module::Select Noise::select;
-noise::module::Turbulence Noise::turbulence;
+module::RidgedMulti Noise::ridged;
+module::Billow Noise::billow;
+module::ScaleBias Noise::scalebias;
+module::Perlin Noise::perlin;
+module::Select Noise::select;
+module::Turbulence Noise::turbulence;
 
 
 
