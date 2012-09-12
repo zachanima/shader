@@ -1,6 +1,8 @@
 #ifndef QUADTREE_HPP
 #define QUADTREE_HPP
 
+#include <cmath>
+
 #include "lwcppgl/display.hpp"
 
 #include "vertex.hpp"
@@ -12,15 +14,19 @@
 
 class Quadtree {
   public:
-    Quadtree(GLdouble, GLdouble, GLdouble, GLdouble);
+    Quadtree(GLfloat, GLfloat, GLfloat, GLfloat);
     ~Quadtree();
-    GLvoid update(GLdouble, GLdouble, GLdouble);
+    GLvoid update(GLfloat, GLfloat, GLfloat);
     GLvoid render();
 
   private:
     Vertex vs[VERTICES];
-    GLdouble box[4];
-    GLuint vao;
+    GLfloat box[4];
+    Quadtree *children[4];
+    GLuint vbo;
+    GLuint ibo;
+    GLvoid divide();
+    GLfloat distance2(GLfloat, GLfloat, GLfloat);
 };
 
 #endif // QUADTREE_HPP

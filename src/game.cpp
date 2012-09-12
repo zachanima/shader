@@ -1,7 +1,6 @@
 #include "game.hpp"
 
-GLfloat Game::camera[3] = { 0.f, 0.f, -4.f };
-GLuint Game::vao;
+GLfloat Game::camera[3] = { 0.f, 0.f, 4.f };
 GLuint Game::program;
 GLuint Game::camera_uniform;
 GLuint Game::time_uniform;
@@ -57,10 +56,12 @@ GLvoid Game::update() {
   const GLuint delta = SDL_GetTicks() - ticks;
   ticks = SDL_GetTicks();
   if (Keyboard::isKeyDown(KEY_W)) {
-    camera[2] += 0.001f * delta;
+    camera[2] -= 0.001f * delta;
+    quadtree->update(camera[0], camera[1], camera[2]);
   }
   if (Keyboard::isKeyDown(KEY_S)) {
-    camera[2] -= 0.001f * delta;
+    camera[2] += 0.001f * delta;
+    quadtree->update(camera[0], camera[1], camera[2]);
   }
 }
 
