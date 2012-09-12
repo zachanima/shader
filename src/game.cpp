@@ -1,7 +1,9 @@
 #include "game.hpp"
 
+GLfloat Game::camera[3] = { 0.f, 0.f, -4.f };
 GLuint Game::vao;
 GLuint Game::program;
+GLuint Game::camera_uniform;
 GLuint Game::time_uniform;
 Quadtree *Game::quadtree = NULL;
 
@@ -12,7 +14,7 @@ GLvoid Game::initialize() {
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
   const GLfloat frustum = 1.0f;
-  const GLfloat znear = 0.5f;
+  const GLfloat znear = 1.175494351e-38f;
   const GLfloat zfar = 10.0f;
   GLfloat matrix[16];
 
@@ -31,6 +33,7 @@ GLvoid Game::initialize() {
   glLinkProgram(program);
 
   // Initialize uniforms.
+  camera_uniform = glGetUniformLocation(program, "camera");
   time_uniform = glGetUniformLocation(program, "time");
   perspective_uniform = glGetUniformLocation(program, "perspective");
   memset(matrix, 0, sizeof(GLfloat) * 16);
@@ -49,6 +52,20 @@ GLvoid Game::initialize() {
 
 
 
+GLvoid Game::update() {
+  static GLuint ticks = SDL_GetTicks();
+  const GLuint delta = SDL_GetTicks() - ticks;
+  ticks = SDL_GetTicks();
+  if (Keyboard::isKeyDown(KEY_W)) {
+    camera[2] += 0.001f * delta;
+  }
+  if (Keyboard::isKeyDown(KEY_S)) {
+    camera[2] -= 0.001f * delta;
+  }
+}
+
+
+
 GLvoid Game::render() {
   glClearColor(0., 0., 0., 1.);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -59,6 +76,8 @@ GLvoid Game::render() {
 
   glUseProgram(program);
   glUniform1f(time_uniform, (GLfloat)SDL_GetTicks() / 1000.0f);
+  glUniform3fv(camera_uniform, 1, camera);
+
 
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   quadtree->render();

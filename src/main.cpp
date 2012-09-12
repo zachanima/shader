@@ -5,6 +5,7 @@ int main(int argc, char **argv) {
   Game::initialize();
 
   while (!Keyboard::isKeyDown(KEY_ESCAPE)) {
+    Game::update();
     Game::render();
     Display::update();
   }

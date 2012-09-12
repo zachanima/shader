@@ -3,6 +3,7 @@
 layout (location = 0) in vec3 position;
 uniform float time;
 uniform mat4 perspective;
+uniform vec3 camera;
 
 vec4 spherize(vec3 position) {
   vec4 sq = vec4(position, 1.f) * vec4(position, 1.f);
@@ -13,14 +14,8 @@ vec4 spherize(vec3 position) {
 }
  
 void main(void) {
-  vec4 offset = vec4(
-    sin(time * 0.9f) * 0.75f,
-    cos(time * 0.7f) * 0.75f,
-    -4.f + sin(time * 0.3f),
-    0.f
-  );
-  vec4 position2 = mix(vec4(position, 1.f), spherize(position), sin(time));
-  vec4 camera = position2 + vec4(offset);
+  vec4 spherized_position = spherize(position);
+  vec4 final_position = spherized_position + vec4(spherize(camera).xyz, 0.f);
 
-  gl_Position = perspective * camera;
+  gl_Position = perspective * final_position;
 }
