@@ -65,7 +65,7 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::update(GLfloat x, GLfloat y, GLfloat z) {
-  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
+  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 16.f; 
 
   if (split) {
     if (children[0] == NULL) {
