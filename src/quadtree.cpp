@@ -20,9 +20,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   this->level = level - 1;
 
   // Generate front face.
-  size_t v = 0;
-  for (size_t b = 0; b < VERTICES_PER_SIDE; b++) {
-    for (size_t a = 0; a < VERTICES_PER_SIDE; a++) {
+  GLuint v = 0;
+  for (GLuint b = 0; b < VERTICES_PER_SIDE; b++) {
+    for (GLuint a = 0; a < VERTICES_PER_SIDE; a++) {
       vs[v].r.x = a1 + L * a; vs[v].r.y = b1 + L * b; vs[v].r.z = 1.; v++;
     }
   }
