@@ -5,14 +5,16 @@
 
 enum {
   KEY_ESCAPE,
-  KEY_W,
-  KEY_A,
-  KEY_S,
-  KEY_D,
   KEY_LEFT,
   KEY_RIGHT,
   KEY_UP,
   KEY_DOWN,
+  KEY_A,
+  KEY_D,
+  KEY_F,
+  KEY_R,
+  KEY_S,
+  KEY_W,
   KEYS
 };
 

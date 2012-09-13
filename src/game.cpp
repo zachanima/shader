@@ -79,6 +79,14 @@ GLvoid Game::update() {
     camera[2] += 0.001f * Quadtree::distance * delta;
   }
 
+  // Debug controls.
+  if (Keyboard::isKeyDown(KEY_R)) {
+    light.ambient += 0.001f * delta;
+  }
+  if (Keyboard::isKeyDown(KEY_F)) {
+    light.ambient -= 0.001f * delta;
+  }
+
   Quadtree::distance = 65536.0f;
 }
 
