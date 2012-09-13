@@ -29,8 +29,10 @@ class Game {
     static GLuint program;
     static GLuint time_uniform;
     static GLuint camera_uniform;
+    static GLuint light_direction_uniform;
     static GLuint light_color_uniform;
     static GLuint light_ambient_uniform;
+    static GLuint light_diffuse_uniform;
     static Quadtree *quadtree;
     static Quadtree *water;
 };

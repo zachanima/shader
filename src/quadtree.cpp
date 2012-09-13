@@ -58,6 +58,32 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
     }
   }
 
+  // Compute normals.
+  for (GLuint i = 0; i < INDICES - 2; i++) {
+    GLuint i0 = is[i+0];
+    GLuint i1 = is[i+1];
+    GLuint i2 = is[i+2];
+    vec3 v1;
+    vec3 v2;
+    if (i % 2 == 0) {
+      v1 = vs[i1].r - vs[i0].r;
+      v2 = vs[i2].r - vs[i0].r;
+    } else {
+      v1 = vs[i2].r - vs[i0].r;
+      v2 = vs[i1].r - vs[i0].r;
+    }
+    vec3 n = normalize(cross(v1, v2));
+    vs[i0].n += n;
+    vs[i1].n += n;
+    vs[i2].n += n;
+    if (i > 0 && i % (VERTICES_PER_SIDE * 2 + 2) == VERTICES_PER_SIDE * 2 - 3) {
+      i += 4; // Skip degenerate triangles.
+    }
+  }
+  for (GLuint v = 0; v < VERTICES; v++) {
+    vs[v].n = normalize(vs[v].n);
+  }
+
   // Initialize vertex buffer object.
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -112,9 +138,12 @@ GLvoid Quadtree::update(vec3 camera) {
 GLvoid Quadtree::render() {
   if (children[0] == NULL) {
     const GLuint ATTR_POSITION = 0;
+    const GLuint ATTR_NORMAL = 1;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glEnableVertexAttribArray(ATTR_POSITION);
-    glVertexAttribPointer(ATTR_POSITION, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(ATTR_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glEnableVertexAttribArray(ATTR_NORMAL);
+    glVertexAttribPointer(ATTR_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)12);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glDrawElements(GL_TRIANGLE_STRIP, INDICES, GL_UNSIGNED_INT, (GLvoid *)0);
   } else {

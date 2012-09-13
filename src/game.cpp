@@ -5,8 +5,10 @@ Light Game::light;
 GLuint Game::program;
 GLuint Game::camera_uniform;
 GLuint Game::time_uniform;
+GLuint Game::light_direction_uniform;
 GLuint Game::light_color_uniform;
 GLuint Game::light_ambient_uniform;
+GLuint Game::light_diffuse_uniform;
 Quadtree *Game::quadtree = NULL;
 
 
@@ -16,7 +18,7 @@ GLvoid Game::initialize() {
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
   const GLfloat znear = 1.f / 65536.f;
-  const GLfloat zfar = 10.f;
+  const GLfloat zfar = 65536.f;
   mat4 projection_matrix = perspective(45.f, (GLfloat)WIDTH / (GLfloat)HEIGHT, znear, zfar);
 
   // Initialize shaders.
@@ -36,16 +38,20 @@ GLvoid Game::initialize() {
   // Initialize uniforms.
   camera_uniform = glGetUniformLocation(program, "camera");
   time_uniform = glGetUniformLocation(program, "time");
+  light_direction_uniform = glGetUniformLocation(program, "light.direction");
   light_color_uniform = glGetUniformLocation(program, "light.color");
   light_ambient_uniform = glGetUniformLocation(program, "light.ambient");
+  light_diffuse_uniform = glGetUniformLocation(program, "light.diffuse");
   perspective_uniform = glGetUniformLocation(program, "perspective");
   glUseProgram(program);
   glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, value_ptr(projection_matrix));
   glUseProgram(0);
 
   // Initialize light.
+  light.direction = vec3(0.f, 0.f, 1.f);
   light.color = vec3(1.f, 1.f, 1.f);
-  light.ambient = 0.1f;
+  light.ambient = 0.01f;
+  light.diffuse = 0.75f;
 
   // Initialize noise.
   Noise::initialize();
@@ -72,10 +78,10 @@ GLvoid Game::update() {
 
   // Debug controls.
   if (Keyboard::isKeyDown(KEY_R)) {
-    light.ambient += 0.001f * delta;
+    light.ambient += 0.0001f * delta;
   }
   if (Keyboard::isKeyDown(KEY_F)) {
-    light.ambient -= 0.001f * delta;
+    light.ambient -= 0.0001f * delta;
   }
 
   Quadtree::distance = 65536.0f;
@@ -97,13 +103,16 @@ GLvoid Game::render() {
   glUniform1f(time_uniform, (GLfloat)SDL_GetTicks() / 1000.0f);
   glUniform3fv(camera_uniform, 1, value_ptr(camera));
 
+  vec3 normalized_light_direction = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 0.f, 1.f));
+  glUniform3fv(light_direction_uniform, 1, value_ptr(normalized_light_direction));
   glUniform3fv(light_color_uniform, 1, value_ptr(light.color));
   glUniform1f(light_ambient_uniform, light.ambient);
+  glUniform1f(light_diffuse_uniform, light.diffuse);
 
 
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   quadtree->render();
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   glUseProgram(0);
 }
