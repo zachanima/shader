@@ -39,7 +39,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
 
   // Apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
-    const GLfloat noise = Noise::noise(vs[v].r.x, vs[v].r.y, vs[v].r.z) / 32.f + 1.f;
+    const GLfloat noise = Noise::noise(vs[v].r.x * 4.f, vs[v].r.y * 4.f, vs[v].r.z * 4.f) / 64.f + 1.f;
     vs[v].r *= noise;
   }
 
@@ -79,7 +79,7 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::update(vec3 camera) {
-  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
+  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 32.f; 
 
   if (split) {
     if (children[0] == NULL && level > 0) {
