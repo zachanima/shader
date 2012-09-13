@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-GLfloat Game::camera[3] = { 0.45f, 0.28f, 4.f };
+vec3 Game::camera = vec3(-0.5f, 0.5f, 4.f);
 Light Game::light;
 GLuint Game::program;
 GLuint Game::camera_uniform;
@@ -15,10 +15,9 @@ GLvoid Game::initialize() {
   GLuint perspective_uniform;
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
-  const GLfloat frustum = 1.f;
   const GLfloat znear = 1.f / 65536.f;
   const GLfloat zfar = 10.f;
-  GLfloat matrix[16];
+  mat4 projection_matrix = perspective(45.f, (GLfloat)WIDTH / (GLfloat)HEIGHT, znear, zfar);
 
   // Initialize shaders.
   vertexSource = source("shader.vert");
@@ -40,20 +39,12 @@ GLvoid Game::initialize() {
   light_color_uniform = glGetUniformLocation(program, "light.color");
   light_ambient_uniform = glGetUniformLocation(program, "light.ambient");
   perspective_uniform = glGetUniformLocation(program, "perspective");
-  memset(matrix, 0, sizeof(GLfloat) * 16);
-  matrix[0] = frustum / ((GLfloat)WIDTH / (GLfloat)HEIGHT);
-  matrix[5] = frustum;
-  matrix[10] = (zfar + znear) / (znear - zfar);
-  matrix[14] = (2.f * zfar * znear) / (znear - zfar);
-  matrix[11] = -1.f;
   glUseProgram(program);
-  glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, matrix);
+  glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, value_ptr(projection_matrix));
   glUseProgram(0);
 
   // Initialize light.
-  light.color[0] = 1.f;
-  light.color[1] = 1.f;
-  light.color[2] = 1.f;
+  light.color = vec3(1.f, 1.f, 1.f);
   light.ambient = 0.1f;
 
   // Initialize noise.
@@ -61,7 +52,7 @@ GLvoid Game::initialize() {
 
   // Initialize quadtree.
   quadtree = new Quadtree(-1.f, -1.f, 1.f, 1.f, 16);
-  quadtree->update(camera[0], camera[1], camera[2]);
+  quadtree->update(camera);
 }
 
 
@@ -71,12 +62,12 @@ GLvoid Game::update() {
   const GLuint delta = SDL_GetTicks() - ticks;
   ticks = SDL_GetTicks();
   if (Keyboard::isKeyDown(KEY_W)) {
-    quadtree->update(camera[0], camera[1], camera[2]);
-    camera[2] -= 0.001f * Quadtree::distance * delta;
+    quadtree->update(camera);
+    camera.z -= 0.001f * Quadtree::distance * delta;
   }
   if (Keyboard::isKeyDown(KEY_S)) {
-    quadtree->update(camera[0], camera[1], camera[2]);
-    camera[2] += 0.001f * Quadtree::distance * delta;
+    quadtree->update(camera);
+    camera.z += 0.001f * Quadtree::distance * delta;
   }
 
   // Debug controls.
@@ -104,14 +95,15 @@ GLvoid Game::render() {
 
   glUseProgram(program);
   glUniform1f(time_uniform, (GLfloat)SDL_GetTicks() / 1000.0f);
-  glUniform3fv(camera_uniform, 1, camera);
-  glUniform3fv(light_color_uniform, 1, light.color);
+  glUniform3fv(camera_uniform, 1, value_ptr(camera));
+
+  glUniform3fv(light_color_uniform, 1, value_ptr(light.color));
   glUniform1f(light_ambient_uniform, light.ambient);
 
 
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   quadtree->render();
-  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   glUseProgram(0);
 }

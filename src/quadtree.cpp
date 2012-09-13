@@ -23,26 +23,26 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   size_t v = 0;
   for (size_t b = 0; b < VERTICES_PER_SIDE; b++) {
     for (size_t a = 0; a < VERTICES_PER_SIDE; a++) {
-      vs[v].r[0] = a1 + L * a; vs[v].r[1] = b1 + L * b; vs[v].r[2] = 1.; v++;
+      vs[v].r.x = a1 + L * a; vs[v].r.y = b1 + L * b; vs[v].r.z = 1.; v++;
     }
   }
 
   // Spherize front face.
   for (GLuint v = 0; v < VERTICES; v++) {
-    const GLfloat x2 = vs[v].r[0] * vs[v].r[0];
-    const GLfloat y2 = vs[v].r[1] * vs[v].r[1];
-    const GLfloat z2 = vs[v].r[2] * vs[v].r[2];
-    vs[v].r[0] *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f);
-    vs[v].r[1] *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f);
-    vs[v].r[2] *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f);
+    const GLfloat x2 = vs[v].r.x * vs[v].r.x;
+    const GLfloat y2 = vs[v].r.y * vs[v].r.y;
+    const GLfloat z2 = vs[v].r.z * vs[v].r.z;
+    vs[v].r.x *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f);
+    vs[v].r.y *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f);
+    vs[v].r.z *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f);
   }
 
   // Apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
-    const GLfloat noise = Noise::noise(vs[v].r[0] * 2.f, vs[v].r[1] * 2.f, vs[v].r[2] * 2.f) / 64.f + 1.f;
-    vs[v].r[0] *= noise;
-    vs[v].r[1] *= noise;
-    vs[v].r[2] *= noise;
+    const GLfloat noise = Noise::noise(vs[v].r.x, vs[v].r.y, vs[v].r.z) / 32.f + 1.f;
+    vs[v].r.x *= noise;
+    vs[v].r.y *= noise;
+    vs[v].r.z *= noise;
   }
 
   // Initialize vertex buffer object.
@@ -78,18 +78,18 @@ Quadtree::~Quadtree() {
 
 
 
-GLvoid Quadtree::update(GLfloat x, GLfloat y, GLfloat z) {
-  bool split = distance2(x, y, z) < (box[2] - box[0]) * (box[2] - box[0]) * 16.f; 
+GLvoid Quadtree::update(vec3 camera) {
+  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
 
   if (split) {
     if (children[0] == NULL && level > 0) {
       divide();
     }
     if (children[0] != NULL) {
-      children[0]->update(x, y, z);
-      children[1]->update(x, y, z);
-      children[2]->update(x, y, z);
-      children[3]->update(x, y, z);
+      children[0]->update(camera);
+      children[1]->update(camera);
+      children[2]->update(camera);
+      children[3]->update(camera);
     }
   } else if (children[0] != NULL) {
     delete children[0];
@@ -102,8 +102,8 @@ GLvoid Quadtree::update(GLfloat x, GLfloat y, GLfloat z) {
     children[3] = NULL;
   }
 
-  if (distance2(x, y, z) < distance * distance) {
-    distance = sqrt(distance2(x, y, z));
+  if (distance2(camera) < distance * distance) {
+    distance = sqrt(distance2(camera));
   }
 }
 
@@ -137,9 +137,9 @@ GLvoid Quadtree::divide() {
 
 
 
-GLfloat Quadtree::distance2(GLfloat x, GLfloat y, GLfloat z) {
+GLfloat Quadtree::distance2(vec3 r) {
   return
-    powf(x - 0.5f * vs[0].r[0] - 0.5f * vs[VERTICES - 1].r[0], 2) +
-    powf(y - 0.5f * vs[0].r[1] - 0.5f * vs[VERTICES - 1].r[1], 2) +
-    powf(z - 0.5f * vs[0].r[2] - 0.5f * vs[VERTICES - 1].r[2], 2);
+    powf(r.x - 0.5f * vs[0].r.x - 0.5f * vs[VERTICES - 1].r.x, 2) +
+    powf(r.y - 0.5f * vs[0].r.y - 0.5f * vs[VERTICES - 1].r.y, 2) +
+    powf(r.z - 0.5f * vs[0].r.z - 0.5f * vs[VERTICES - 1].r.z, 2);
 }
