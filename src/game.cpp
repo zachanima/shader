@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-GLfloat Game::camera[3] = { -0.5f, 0.5f, 4.f };
+GLfloat Game::camera[3] = { 0.45f, 0.28f, 4.f };
 GLuint Game::program;
 GLuint Game::camera_uniform;
 GLuint Game::time_uniform;
@@ -12,9 +12,9 @@ GLvoid Game::initialize() {
   GLuint perspective_uniform;
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
-  const GLfloat frustum = 1.0f;
-  const GLfloat znear = 1.175494351e-38f;
-  const GLfloat zfar = 10.0f;
+  const GLfloat frustum = 1.f;
+  const GLfloat znear = 1.f / 65536.f;
+  const GLfloat zfar = 10.f;
   GLfloat matrix[16];
 
   // Initialize shaders.
@@ -74,10 +74,12 @@ GLvoid Game::update() {
 
 
 GLvoid Game::render() {
-  glClearColor(0., 0., 0., 1.);
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+  glClearDepth(1.f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_CULL_FACE);
 
@@ -86,9 +88,9 @@ GLvoid Game::render() {
   glUniform3fv(camera_uniform, 1, camera);
 
 
-  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   quadtree->render();
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   glUseProgram(0);
 }

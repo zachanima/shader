@@ -22,6 +22,7 @@ class Game {
     static GLuint time_uniform;
     static GLuint camera_uniform;
     static Quadtree *quadtree;
+    static Quadtree *water;
 };
 
 #endif // GAME_HPP

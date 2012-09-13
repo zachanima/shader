@@ -2,13 +2,10 @@
  
 precision highp float;
  
+smooth in vec4 vertex_color;
 out vec4 color;
 uniform float time;
 
 void main(void) {
-  color = mix(
-    vec4(0.5f, 0.5f, 0.5f, 1.f),
-    vec4(1.f, 1.f, 1.f, 1.f),
-    (sin(time) + 1.f) * 0.5f
-  );
+  color = vertex_color;
 }
