@@ -40,17 +40,10 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   // Apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
     const GLfloat noise = Noise::noise(vs[v].r.x, vs[v].r.y, vs[v].r.z) / 32.f + 1.f;
-    vs[v].r.x *= noise;
-    vs[v].r.y *= noise;
-    vs[v].r.z *= noise;
+    vs[v].r *= noise;
   }
 
-  // Initialize vertex buffer object.
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, VERTICES * sizeof(Vertex), vs, GL_STATIC_DRAW);
-
-  // Initialize index buffer object.
+  // Compute indices.
   GLuint is[INDICES];
   const GLuint DEGENERATES = 2 * VERTICES_PER_SIDE;
   for (GLuint i = 0; i < INDICES; i += DEGENERATES + 2) {
@@ -64,6 +57,13 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
       is[i + DEGENERATES + 1] = ROW + DEGENERATES;
     }
   }
+
+  // Initialize vertex buffer object.
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, VERTICES * sizeof(Vertex), vs, GL_STATIC_DRAW);
+
+  // Initialize index buffer object.
   glGenBuffers(1, &ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), is, GL_STATIC_DRAW);
