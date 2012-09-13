@@ -1,9 +1,12 @@
 #include "game.hpp"
 
 GLfloat Game::camera[3] = { 0.45f, 0.28f, 4.f };
+Light Game::light;
 GLuint Game::program;
 GLuint Game::camera_uniform;
 GLuint Game::time_uniform;
+GLuint Game::light_color_uniform;
+GLuint Game::light_ambient_uniform;
 Quadtree *Game::quadtree = NULL;
 
 
@@ -34,6 +37,8 @@ GLvoid Game::initialize() {
   // Initialize uniforms.
   camera_uniform = glGetUniformLocation(program, "camera");
   time_uniform = glGetUniformLocation(program, "time");
+  light_color_uniform = glGetUniformLocation(program, "light.color");
+  light_ambient_uniform = glGetUniformLocation(program, "light.ambient");
   perspective_uniform = glGetUniformLocation(program, "perspective");
   memset(matrix, 0, sizeof(GLfloat) * 16);
   matrix[0] = frustum / ((GLfloat)WIDTH / (GLfloat)HEIGHT);
@@ -44,6 +49,12 @@ GLvoid Game::initialize() {
   glUseProgram(program);
   glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, matrix);
   glUseProgram(0);
+
+  // Initialize light.
+  light.color[0] = 1.f;
+  light.color[1] = 1.f;
+  light.color[2] = 1.f;
+  light.ambient = 0.1f;
 
   // Initialize noise.
   Noise::initialize();
@@ -86,6 +97,8 @@ GLvoid Game::render() {
   glUseProgram(program);
   glUniform1f(time_uniform, (GLfloat)SDL_GetTicks() / 1000.0f);
   glUniform3fv(camera_uniform, 1, camera);
+  glUniform3fv(light_color_uniform, 1, light.color);
+  glUniform1f(light_ambient_uniform, light.ambient);
 
 
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

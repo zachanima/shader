@@ -14,6 +14,6 @@ void main(void) {
   vertex_color = mix(
     vec4(0.2f, 0.3f, 0.8f, 0.75f),
     vec4(1.0f, 1.0f, 1.0f, 1.0f),
-    (dist - 1.f) * 32.f
+    (dist - 1.f) * 64.f
   );
 }
