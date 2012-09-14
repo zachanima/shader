@@ -39,7 +39,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
 
   // Apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
-    const GLfloat noise = Noise::noise(vs[v].r.x * 4.f, vs[v].r.y * 4.f, vs[v].r.z * 4.f) / 32.f + 1.f;
+    const GLfloat noise = Noise::noise(vs[v].r) / 32.f + 1.f;
     vs[v].r *= noise;
   }
 

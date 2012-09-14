@@ -11,6 +11,8 @@ module::Turbulence Noise::turbulence;
 
 void Noise::initialize() {
   ridged.SetOctaveCount(20);
+  ridged.SetFrequency(4.f);
+  /*
   billow.SetFrequency(2.f);
   billow.SetOctaveCount(16);
   scalebias.SetSourceModule(0, billow);
@@ -27,10 +29,11 @@ void Noise::initialize() {
   turbulence.SetSourceModule(0, select);
   turbulence.SetFrequency(4.0f);
   turbulence.SetPower(0.125f);
+  */
 }
 
 
 
-const float Noise::noise(const float x, const float y, const float z) {
-  return turbulence.GetValue(x, y, z);
+const float Noise::noise(glm::vec3 r) {
+  return ridged.GetValue(r.x, r.y, r.z);
 }

@@ -2,13 +2,14 @@
 #define NOISE_HPP
 
 #include <libnoise/noise.h>
+#include <glm/glm.hpp>
 
 using namespace noise;
 
 class Noise {
   public:
     static void initialize();
-    static const float noise(const float, const float, const float);
+    static const float noise(glm::vec3 r);
 
   private:
     static module::RidgedMulti ridged;
