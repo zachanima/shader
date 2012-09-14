@@ -3,8 +3,8 @@ IN      = src/*.cpp src/**/*.cpp
 OUT     = bin/$(PROJECT)
 
 CC      = g++
-CFLAGS  = -O2 -ansi -pedantic -g -I/usr/include/ImageMagick # -Wall
-LFLAGS  = -lGL -lGLU -lSDL -lnoise -lMagick++
+CFLAGS  = -O2 -ansi -pedantic -g -Wall
+LFLAGS  = -lGL -lGLU -lSDL -lnoise
 
 all: $(PROJECT)
 

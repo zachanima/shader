@@ -9,14 +9,12 @@ struct Light {
   float diffuse;
 };
  
-in vec2 vertex_texture;
 in vec3 vertex_normal;
 
 out vec4 color;
 
 uniform float time;
 uniform Light light;
-uniform sampler2D sampler;
 
 void main(void) {
   vec4 ambient_color = vec4(light.color, 1.f) * light.ambient;
@@ -29,5 +27,5 @@ void main(void) {
     diffuse_color = vec4(0.f, 0.f, 0.f, 0.f);
   }
 
-  color = texture2D(sampler, vertex_texture) * (ambient_color + diffuse_color);
+  color = vec4(1.f, 1.f, 1.f, 1.f) * (ambient_color + diffuse_color);
 }

@@ -15,7 +15,6 @@ Quadtree *Game::quadtree = NULL;
 
 GLvoid Game::initialize() {
   GLuint perspective_uniform;
-  GLuint sampler_uniform;
   GLuint vertexShader, fragmentShader;
   GLchar *vertexSource, *fragmentSource;
   const GLfloat znear = 1.f / 65536.f;
@@ -44,10 +43,8 @@ GLvoid Game::initialize() {
   light_ambient_uniform = glGetUniformLocation(program, "light.ambient");
   light_diffuse_uniform = glGetUniformLocation(program, "light.diffuse");
   perspective_uniform = glGetUniformLocation(program, "perspective");
-  sampler_uniform = glGetUniformLocation(program, "sampler");
   glUseProgram(program);
   glUniformMatrix4fv(perspective_uniform, 1, GL_FALSE, value_ptr(projection_matrix));
-  glUniform1i(sampler_uniform, 0);
   glUseProgram(0);
 
   // Initialize light.
