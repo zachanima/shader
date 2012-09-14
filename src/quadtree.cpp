@@ -105,7 +105,7 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::update(vec3 camera) {
-  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 1.f; 
+  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
 
   if (split) {
     if (children[0] == NULL && level > 0) {
