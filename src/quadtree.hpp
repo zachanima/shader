@@ -11,7 +11,7 @@
 
 using namespace glm;
 
-#define CHUNK_SIZE (4)
+#define CHUNK_SIZE (32)
 #define VERTICES_PER_SIDE (CHUNK_SIZE + 1)
 #define VERTICES (VERTICES_PER_SIDE * VERTICES_PER_SIDE)
 #define INDICES (CHUNK_SIZE * 2 * VERTICES_PER_SIDE + 2 * (CHUNK_SIZE - 1))

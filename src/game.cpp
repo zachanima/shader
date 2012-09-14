@@ -1,6 +1,6 @@
 #include "game.hpp"
 
-vec3 Game::camera = vec3(-0.51f, 0.505f, 4.f);
+vec3 Game::camera = vec3(0.25f, 0.25f, 4.f);
 Light Game::light;
 GLuint Game::program;
 GLuint Game::camera_uniform;
