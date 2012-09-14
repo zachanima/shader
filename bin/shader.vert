@@ -1,10 +1,11 @@
 #version 420
  
 layout (location = 0) in vec3 position;
-layout (location = 1) in vec3 normal;
+layout (location = 1) in vec2 texture;
+layout (location = 2) in vec3 normal;
 
+out vec2 vertex_texture;
 out vec3 vertex_normal;
-smooth out vec4 vertex_color;
 
 uniform float time;
 uniform mat4 perspective;
@@ -15,6 +16,6 @@ void main(void) {
   float dist = distance(vec4(position, 1.f), vec4(0.f, 0.f, 0.f, 1.f));
 
   gl_Position = perspective * final_position;
+  vertex_texture = texture;
   vertex_normal = (perspective * vec4(normal, 0.f)).xyz;
-  vertex_color = vec4(1.f, 1.f, 1.f, 1.f);
 }

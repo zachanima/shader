@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <glm/glm.hpp>
+#include <ImageMagick/Magick++.h>
 
 #include "lwcppgl/display.hpp"
 
@@ -29,8 +30,9 @@ class Quadtree {
     GLfloat box[4];
     Quadtree *children[4];
     GLuint level;
-    GLuint vbo;
-    GLuint ibo;
+    GLuint vbo; // Vertex buffer object.
+    GLuint ibo; // Index buffer object.
+    GLuint tid; // Texture ID.
     GLvoid divide();
     GLfloat distance2(vec3);
 };

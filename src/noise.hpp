@@ -4,12 +4,15 @@
 #include <libnoise/noise.h>
 #include <glm/glm.hpp>
 
+#include "noiseutils.h"
+
 using namespace noise;
 
 class Noise {
   public:
     static void initialize();
     static const float noise(glm::vec3 r);
+    static void heightmap(float, float, float, float);
 
   private:
     static module::RidgedMulti ridged;
