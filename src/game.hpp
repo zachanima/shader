@@ -7,10 +7,10 @@
 
 #include "lwcppgl/display.hpp"
 
-#include "noise.hpp"
-#include "source.hpp"
 #include "quadtree.hpp"
 #include "light.hpp"
+#include "camera.hpp"
+#include "noise.hpp"
 
 #define WIDTH (1280)
 #define HEIGHT (720)
@@ -24,15 +24,9 @@ class Game {
     static GLvoid render();
 
   private:
-    static vec3 camera;
+    static Camera camera;
     static Light light;
     static GLuint program;
-    static GLuint time_uniform;
-    static GLuint camera_uniform;
-    static GLuint light_direction_uniform;
-    static GLuint light_color_uniform;
-    static GLuint light_ambient_uniform;
-    static GLuint light_diffuse_uniform;
     static Quadtree *quadtree;
     static Quadtree *water;
 };

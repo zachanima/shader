@@ -3,6 +3,9 @@
 
 #define GL_GLEXT_PROTOTYPES
 
+#include <cstdio>
+#include <cstdlib>
+
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <SDL/SDL.h>
@@ -12,12 +15,12 @@
 
 class Display {
   public:
-    static void create(int, int);
-    static void update();
+    static GLvoid create(GLuint, GLuint);
+    static GLvoid update();
+    static GLuint shaders(const char *, const char *);
 
   private:
-    static int width;
-    static int height;
+    static GLchar *source(const GLchar *);
 };
 
 #endif // LWCPPGL_DISPLAY_HPP

@@ -1,6 +1,6 @@
 #include "quadtree.hpp"
 
-GLfloat Quadtree::distance = 0.f;
+GLfloat Quadtree::minDistance = 65536.f;
 
 
 
@@ -12,10 +12,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   box[2] = a2;
   box[3] = b2;
 
-  children[0] = NULL;
-  children[1] = NULL;
-  children[2] = NULL;
-  children[3] = NULL;
+  for (GLuint i = 0; i < 4; i++) {
+    children[i] = NULL;
+  }
 
   this->level = level - 1;
 
@@ -23,22 +22,13 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   GLuint v = 0;
   for (GLuint b = 0; b < VERTICES_PER_SIDE; b++) {
     for (GLuint a = 0; a < VERTICES_PER_SIDE; a++) {
-      vs[v].r.x = a1 + L * a; vs[v].r.y = b1 + L * b; vs[v].r.z = 1.; v++;
+      vs[v++].r = vec3(a1 + L * a, b1 + L * b, 1.f);
     }
   }
 
-  // Spherize front face.
+  // Spherize front face, apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
-    const GLfloat x2 = vs[v].r.x * vs[v].r.x;
-    const GLfloat y2 = vs[v].r.y * vs[v].r.y;
-    const GLfloat z2 = vs[v].r.z * vs[v].r.z;
-    vs[v].r.x *= sqrt(1.f - y2 / 2.f - z2 / 2.f + y2 * z2 / 3.f);
-    vs[v].r.y *= sqrt(1.f - x2 / 2.f - z2 / 2.f + x2 * z2 / 3.f);
-    vs[v].r.z *= sqrt(1.f - x2 / 2.f - y2 / 2.f + x2 * y2 / 3.f);
-  }
-
-  // Apply noise.
-  for (GLuint v = 0; v < VERTICES; v++) {
+    vs[v].r = spherize(vs[v].r);
     const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
     vs[v].r *= noise;
   }
@@ -60,9 +50,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
 
   // Compute normals.
   for (GLuint i = 0; i < INDICES - 2; i++) {
-    GLuint i0 = is[i+0];
-    GLuint i1 = is[i+1];
-    GLuint i2 = is[i+2];
+    const GLuint i0 = is[i+0];
+    const GLuint i1 = is[i+1];
+    const GLuint i2 = is[i+2];
     vec3 v1;
     vec3 v2;
     if (i % 2 == 0) {
@@ -105,31 +95,27 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::update(vec3 camera) {
-  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f; 
+  bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f;
 
   if (split) {
     if (children[0] == NULL && level > 0) {
       divide();
     }
     if (children[0] != NULL) {
-      children[0]->update(camera);
-      children[1]->update(camera);
-      children[2]->update(camera);
-      children[3]->update(camera);
+      for (GLuint i = 0; i < 4; i++) {
+        children[i]->update(camera);
+      }
     }
+
   } else if (children[0] != NULL) {
-    delete children[0];
-    delete children[1];
-    delete children[2];
-    delete children[3];
-    children[0] = NULL;
-    children[1] = NULL;
-    children[2] = NULL;
-    children[3] = NULL;
+    for (GLuint i = 0; i < 4; i++) {
+      delete children[i];
+      children[i] = NULL;
+    }
   }
 
-  if (distance2(camera) < distance * distance) {
-    distance = sqrt(distance2(camera));
+  if (distance2(camera) < minDistance * minDistance) {
+    minDistance = sqrt(distance2(camera));
   }
 }
 
@@ -137,15 +123,20 @@ GLvoid Quadtree::update(vec3 camera) {
 
 GLvoid Quadtree::render() {
   if (children[0] == NULL) {
-    const GLuint ATTR_POSITION = 0;
-    const GLuint ATTR_NORMAL = 1;
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glEnableVertexAttribArray(ATTR_POSITION);
-    glVertexAttribPointer(ATTR_POSITION, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-    glEnableVertexAttribArray(ATTR_NORMAL);
-    glVertexAttribPointer(ATTR_NORMAL, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)12);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, r));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, n));
+
     glDrawElements(GL_TRIANGLE_STRIP, INDICES, GL_UNSIGNED_INT, (GLvoid *)0);
+
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
   } else {
     for (GLuint i = 0; i < 4; i++) {
       children[i]->render();
@@ -166,9 +157,19 @@ GLvoid Quadtree::divide() {
 
 
 
-GLfloat Quadtree::distance2(vec3 r) {
+const GLfloat Quadtree::distance2(vec3 r) {
   return
     powf(r.x - 0.5f * vs[0].r.x - 0.5f * vs[VERTICES - 1].r.x, 2) +
     powf(r.y - 0.5f * vs[0].r.y - 0.5f * vs[VERTICES - 1].r.y, 2) +
     powf(r.z - 0.5f * vs[0].r.z - 0.5f * vs[VERTICES - 1].r.z, 2);
+}
+
+
+
+const vec3 Quadtree::spherize(vec3 r) {
+  const vec3 r2 = r * r;
+  r.x *= sqrt(1.f - r2.y / 2.f - r2.z / 2.f + r2.y * r2.z / 3.f);
+  r.y *= sqrt(1.f - r2.x / 2.f - r2.z / 2.f + r2.x * r2.z / 3.f);
+  r.z *= sqrt(1.f - r2.x / 2.f - r2.y / 2.f + r2.x * r2.y / 3.f);
+  return r;
 }
