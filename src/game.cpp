@@ -27,7 +27,7 @@ GLvoid Game::initialize() {
   perspectiveUniform =     glGetUniformLocation(program, "perspective");
   
   // Initialize camera.
-  camera.position = vec3(0.27f, 0.25f, 4.f);
+  camera.position = vec3(0.27f, -0.30f, 4.f);
 
   // Initialize light.
   light.direction = vec3(0.f, 0.f, 1.f);
