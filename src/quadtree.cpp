@@ -95,18 +95,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  GLubyte *data = (GLubyte *)malloc(256 * 256 * 4 * sizeof(GLubyte));
-  for (GLuint i = 0; i < 256 * 256 * 4; i += 4) {
-    GLubyte value;
-    if ((i / 4) % 3) {
-      value = 128;
-    } else {
-      value = 255;
-    }
-    data[i] = data[i+1] = data[i+2] = value;
-    data[i+3] = 255;
-  }
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Initialize framebuffer object, attach texture.
