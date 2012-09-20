@@ -1,6 +1,7 @@
 #include "quadtree.hpp"
 
 GLfloat Quadtree::minDistance = 65536.f;
+GLuint Quadtree::generatorProgram;
 
 
 
@@ -107,6 +108,60 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   }
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
   glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Initialize framebuffer object, attach texture.
+  GLuint fbo;
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+  const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+  glDrawBuffers(1, buffers);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // Initialize framebuffer vertex buffer object.
+  GLuint fvbo;
+  const GLfloat fvs[] = {
+    -1.f,  1.f, 0.f,
+    -1.f, -1.f, 0.f,
+     1.f, -1.f, 0.f,
+    -1.f,  1.f, 0.f,
+     1.f, -1.f, 0.f,
+     1.f,  1.f, 0.f
+  };
+  glGenBuffers(1, &fvbo);
+  glBindBuffer(GL_ARRAY_BUFFER, fvbo);
+  glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(GLfloat), fvs, GL_STATIC_DRAW);
+
+  // Initialize framebuffer index buffer object.
+  GLuint fibo;
+  const GLushort fis[] = { 0, 1, 2, 3, 4, 5 };
+  glGenBuffers(1, &fibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLushort), fis, GL_STATIC_DRAW);
+
+  // Render to framebuffer.
+  glPushAttrib(GL_VIEWPORT);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glViewport(0, 0, 256, 256);
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(generatorProgram);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, fvbo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glPopAttrib();
+
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteBuffers(1, &fvbo);
+  glDeleteBuffers(1, &fibo);
 }
 
 

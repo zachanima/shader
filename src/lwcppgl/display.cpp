@@ -31,6 +31,8 @@ GLuint Display::shaders(const GLchar *vertexFilename, const GLchar *fragmentFile
   const GLuint program = glCreateProgram();
   glAttachShader(program, vertexShader);
   glAttachShader(program, fragmentShader);
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
   glLinkProgram(program);
   return program;
 }
