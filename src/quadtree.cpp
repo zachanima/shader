@@ -31,8 +31,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   // Spherize front face, apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
     vs[v].r = spherize(vs[v].r);
-    // const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
-    // vs[v].r *= noise;
+    const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
+    vs[v].r *= noise;
   }
 
   // Compute indices.
@@ -85,6 +85,28 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glGenBuffers(1, &ibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), is, GL_STATIC_DRAW);
+
+  // Initialize texture.
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  GLubyte *data = (GLubyte *)malloc(256 * 256 * 4 * sizeof(GLubyte));
+  for (GLuint i = 0; i < 256 * 256 * 4; i += 4) {
+    GLubyte value;
+    if ((i / 4) % 3) {
+      value = 128;
+    } else {
+      value = 255;
+    }
+    data[i] = data[i+1] = data[i+2] = value;
+    data[i+3] = 255;
+  }
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 
@@ -125,6 +147,7 @@ GLvoid Quadtree::update(vec3 camera) {
 
 GLvoid Quadtree::render() {
   if (children[0] == NULL) {
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glEnableVertexAttribArray(0);
@@ -141,6 +164,7 @@ GLvoid Quadtree::render() {
     glDisableVertexAttribArray(2);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 
   } else {
     for (GLuint i = 0; i < 4; i++) {

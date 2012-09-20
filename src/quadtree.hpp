@@ -31,6 +31,7 @@ class Quadtree {
     GLuint level;
     GLuint vbo; // Vertex buffer object.
     GLuint ibo; // Index buffer object.
+    GLuint texture;
     GLvoid divide();
     const GLfloat distance2(vec3);
     const static vec3 spherize(vec3);

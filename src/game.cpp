@@ -9,6 +9,7 @@ Quadtree *Game::quadtree = NULL;
 
 GLvoid Game::initialize() {
   GLuint perspectiveUniform;
+  GLuint samplerUniform;
   const GLfloat FOV = 45.f;
   const GLfloat ASPECT = (GLfloat)WIDTH / (GLfloat)HEIGHT;
   const GLfloat ZNEAR = 1.f / 65536.f;
@@ -25,6 +26,7 @@ GLvoid Game::initialize() {
   light.ambientUniform =   glGetUniformLocation(program, "light.ambient");
   light.diffuseUniform =   glGetUniformLocation(program, "light.diffuse");
   perspectiveUniform =     glGetUniformLocation(program, "perspective");
+  samplerUniform =         glGetUniformLocation(program, "sampler");
   
   // Initialize camera.
   camera.position = vec3(0.27f, -0.30f, 4.f);
@@ -44,6 +46,7 @@ GLvoid Game::initialize() {
 
   // Apply perspective uniform.
   glUseProgram(program);
+  glUniform1i(samplerUniform, 0);
   glUniformMatrix4fv(perspectiveUniform, 1, GL_FALSE, value_ptr(projectionMatrix));
   glUseProgram(0);
 }
