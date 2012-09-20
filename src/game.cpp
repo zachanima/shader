@@ -18,7 +18,6 @@ GLvoid Game::initialize() {
 
   // Initialize shaders.
   program = Display::shaders("render.vert", "render.frag");
-  Quadtree::generatorProgram = Display::shaders("heightmap.vert", "heightmap.frag");
 
   // Initialize uniforms.
   camera.positionUniform = glGetUniformLocation(program, "camera");
@@ -35,13 +34,16 @@ GLvoid Game::initialize() {
   // Initialize light.
   light.direction = vec3(0.f, 0.f, 1.f);
   light.color = vec3(1.f, 1.f, 1.f);
-  light.ambient = 0.01f;
+  light.ambient = 0.1f;
   light.diffuse = 0.75f;
 
   // Initialize noise.
   Noise::initialize();
 
-  // Initialize quadtree.
+  // Initialize quadtree class.
+  Quadtree::initialize();
+
+  // Initialize quadtree member.
   quadtree = new Quadtree(-1.f, -1.f, 1.f, 1.f, 16);
   quadtree->update(camera.position);
 

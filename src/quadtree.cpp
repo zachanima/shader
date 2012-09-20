@@ -168,6 +168,12 @@ Quadtree::~Quadtree() {
 
 
 
+GLvoid Quadtree::initialize() {
+  generatorProgram = Display::shaders("heightmap.vert", "heightmap.frag");
+}
+
+
+
 GLvoid Quadtree::update(vec3 camera) {
   bool split = distance2(camera) < (box[2] - box[0]) * (box[2] - box[0]) * 4.f;
 

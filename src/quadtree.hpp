@@ -23,6 +23,7 @@ class Quadtree {
     static GLuint generatorProgram;
     Quadtree(GLfloat, GLfloat, GLfloat, GLfloat, GLuint);
     ~Quadtree();
+    static GLvoid initialize();
     GLvoid update(vec3);
     GLvoid render();
 
