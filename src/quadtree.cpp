@@ -32,8 +32,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   // Spherize front face, apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
     vs[v].r = spherize(vs[v].r);
-    const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
-    vs[v].r *= noise;
+    // const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
+    // vs[v].r *= noise;
   }
 
   // Compute indices.
@@ -139,6 +139,10 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLushort), fis, GL_STATIC_DRAW);
 
+  // Initialize framebuffer uniforms.
+  const GLuint meshPositionUniform = glGetUniformLocation(generatorProgram, "meshPosition");
+  const GLuint meshLengthUniform =   glGetUniformLocation(generatorProgram, "meshLength");
+
   // Render to framebuffer.
   glPushAttrib(GL_VIEWPORT);
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
@@ -146,6 +150,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(generatorProgram);
+  glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(a1, b1, 1.f)));
+  glUniform1f( meshLengthUniform,   (a2 - a1));
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindBuffer(GL_ARRAY_BUFFER, fvbo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);

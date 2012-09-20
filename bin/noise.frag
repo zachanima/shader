@@ -89,12 +89,29 @@ float snoise(vec3 v) {
   ));
 }
 
+float simplex(vec3 v, int octaves, float persistence, float scale) {
+  float total = 0.f;
+  float frequency = scale;
+  float amplitude = 1.f;
+
+  float maxAmplitude = 0.f;
+
+  for (int i = 0; i < octaves; i++) {
+    total += snoise(v * frequency) * amplitude;
+    frequency *= 2.f;
+    maxAmplitude += amplitude;
+    amplitude *= persistence;
+  }
+
+  return total / maxAmplitude;
+}
+
 in vec3 vertexPosition;
 
 out vec4 color;
 
 void main(void) {
-  float noise = snoise(vertexPosition);
+  float noise = simplex(vertexPosition, 24, 0.875f, 4.0f);
   noise += 0.5f;
   noise /= 2.f;
   color = vec4(noise, noise, noise, 1.f);
