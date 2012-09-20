@@ -16,7 +16,7 @@ GLvoid Game::initialize() {
   const mat4 projectionMatrix = perspective(FOV, ASPECT, ZNEAR, ZFAR);
 
   // Initialize shaders.
-  program = Display::shaders("shader.vert", "shader.frag");
+  program = Display::shaders("render.vert", "render.frag");
 
   // Initialize uniforms.
   camera.positionUniform = glGetUniformLocation(program, "camera");
