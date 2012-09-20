@@ -18,7 +18,7 @@ GLvoid Game::initialize() {
 
   // Initialize shaders.
   program = Display::shaders("render.vert", "render.frag");
-  Quadtree::generatorProgram = Display::shaders("noise.vert", "noise.frag");
+  Quadtree::generatorProgram = Display::shaders("heightmap.vert", "heightmap.frag");
 
   // Initialize uniforms.
   camera.positionUniform = glGetUniformLocation(program, "camera");
