@@ -22,7 +22,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   GLuint v = 0;
   for (GLuint b = 0; b < VERTICES_PER_SIDE; b++) {
     for (GLuint a = 0; a < VERTICES_PER_SIDE; a++) {
-      vs[v++].r = vec3(a1 + L * a, b1 + L * b, 1.f);
+      vs[v].r = vec3(a1 + L * a, b1 + L * b, 1.f);
+      vs[v].t = vec2((GLfloat)a / (GLfloat)CHUNK_SIZE, (GLfloat)b / (GLfloat)CHUNK_SIZE);
+      v++;
     }
   }
 
@@ -127,13 +129,16 @@ GLvoid Quadtree::render() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, r));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, n));
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, t));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (GLvoid *)offsetof(Vertex, n));
 
     glDrawElements(GL_TRIANGLE_STRIP, INDICES, GL_UNSIGNED_INT, (GLvoid *)0);
 
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 

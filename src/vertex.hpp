@@ -7,6 +7,7 @@ using namespace glm;
 
 struct Vertex {
   vec3 r;
+  vec2 t;
   vec3 n;
 };
 
