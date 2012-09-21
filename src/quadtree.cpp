@@ -36,14 +36,6 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
     vs[v].r *= noise;
   }
 
-  // Apply noise to x, y.
-  for (GLuint v = 0; v < VERTICES; v++) {
-    GLfloat noise = Noise::noise(vs[v].r) / 4.f + 1.f;
-    vs[v].r.x *= noise;
-    noise = Noise::noise(vs[v].r) / 4.f + 1.f;
-    vs[v].r.y *= noise;
-  }
-
   // Compute indices.
   GLuint is[INDICES];
   const GLuint DEGENERATES = 2 * VERTICES_PER_SIDE;
