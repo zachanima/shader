@@ -112,21 +112,19 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   const GLfloat fvs[] = {
     -1.f,  1.f, 0.f,
     -1.f, -1.f, 0.f,
-     1.f, -1.f, 0.f,
-    -1.f,  1.f, 0.f,
-     1.f, -1.f, 0.f,
-     1.f,  1.f, 0.f
+     1.f,  1.f, 0.f,
+     1.f, -1.f, 0.f
   };
   glGenBuffers(1, &fvbo);
   glBindBuffer(GL_ARRAY_BUFFER, fvbo);
-  glBufferData(GL_ARRAY_BUFFER, 6 * 3 * sizeof(GLfloat), fvs, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), fvs, GL_STATIC_DRAW);
 
   // Initialize framebuffer index buffer object.
   GLuint fibo;
-  const GLushort fis[] = { 0, 1, 2, 3, 4, 5 };
+  const GLushort fis[] = { 0, 1, 2, 3 };
   glGenBuffers(1, &fibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(GLushort), fis, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLushort), fis, GL_STATIC_DRAW);
 
   // Initialize framebuffer uniforms.
   const GLuint meshPositionUniform = glGetUniformLocation(generatorProgram, "meshPosition");
@@ -146,7 +144,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDrawElements(GL_TRIANGLE_STRIP, 6, GL_UNSIGNED_SHORT, (GLvoid *)0);
   glDisableVertexAttribArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
