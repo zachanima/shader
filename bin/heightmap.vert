@@ -1,4 +1,4 @@
-#version 420
+#version 140
 
 layout (location = 0) in vec3 position;
 
