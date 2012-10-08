@@ -2,6 +2,7 @@
 
 GLfloat Quadtree::minDistance = 65536.f;
 GLuint Quadtree::heightmapProgram;
+GLuint Quadtree::normalmapProgram;
 
 
 
@@ -32,8 +33,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   // Spherize front face, apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
     vs[v].r = spherize(vs[v].r);
-    const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
-    vs[v].r *= noise;
+    // const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
+    // vs[v].r *= noise;
   }
 
   // Compute indices.
@@ -144,7 +145,62 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
-  glDrawElements(GL_TRIANGLE_STRIP, 6, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glPopAttrib();
+
+  // Initialize normalmap texture;
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &normalmap);
+  glBindTexture(GL_TEXTURE_2D, normalmap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Attach normalmap texture to framebuffer object.
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, normalmap, 0);
+  glDrawBuffers(1, buffers);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // Initialize normalmap framebuffer vertex buffer object.
+  GLuint nfvbo;
+  const GLfloat nfvs[] = {
+    -1.f,  1.f, 0.f,  0.f,  1.f,
+    -1.f, -1.f, 0.f,  0.f,  0.f,
+     1.f,  1.f, 0.f,  1.f,  1.f,
+     1.f, -1.f, 0.f,  1.f,  0.f
+  };
+  glGenBuffers(1, &nfvbo);
+  glBindBuffer(GL_ARRAY_BUFFER, nfvbo);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 5 * sizeof(GLfloat), nfvs, GL_STATIC_DRAW);
+
+  // Initialize sampler uniform.
+  GLuint samplerUniform = glGetUniformLocation(normalmapProgram, "sampler");
+
+  // Render to framebuffer.
+  glPushAttrib(GL_VIEWPORT);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glViewport(0, 0, 256, 256);
+  glClearColor(1.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(normalmapProgram);
+  glUniform1i(samplerUniform, 0);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glBindBuffer(GL_ARRAY_BUFFER, nfvbo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)12);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
   glDisableVertexAttribArray(0);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -168,6 +224,7 @@ Quadtree::~Quadtree() {
 
 GLvoid Quadtree::initialize() {
   heightmapProgram = Display::shaders("heightmap.vert", "heightmap.frag");
+  normalmapProgram = Display::shaders("normalmap.vert", "normalmap.frag");
 }
 
 
@@ -201,7 +258,7 @@ GLvoid Quadtree::update(vec3 camera) {
 
 GLvoid Quadtree::render() {
   if (children[0] == NULL) {
-    glBindTexture(GL_TEXTURE_2D, texture);
+    glBindTexture(GL_TEXTURE_2D, normalmap);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glEnableVertexAttribArray(0);

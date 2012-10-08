@@ -75,7 +75,7 @@ GLvoid Game::update() {
 
 
 GLvoid Game::render() {
-  const vec3 lightDirection = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 0.f, 1.f));
+  const vec3 lightDirection = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 1.f + cos(SDL_GetTicks() / 1000.f) * 2.f, 1.f));
 
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClearDepth(1.f);

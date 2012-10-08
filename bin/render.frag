@@ -19,6 +19,17 @@ uniform Light light;
 uniform sampler2D sampler;
 
 void main(void) {
+  float distSqr = dot(light.direction, light.direction);
+  vec3 lVec = light.direction * inversesqrt(distSqr);
+  vec4 base = vec4(1.f, 1.f, 1.f, 1.f);
+  vec3 bump = normalize(texture2D(sampler, vertexTexture).xyz * 2.f - 1.f);
+  vec4 vAmbient = vec4(light.ambient * vec3(1.f, 1.f, 1.f), 1.f);
+  float diffuse = max(dot(lVec, bump), 0.f);
+  vec4 vDiffuse = vec4(light.diffuse * vec3(1.f, 1.f, 1.f) * diffuse, 1.f);
+
+  color = vec4(vAmbient * base + vDiffuse * base);
+
+  /*
   vec4 ambientColor = vec4(light.color, 1.f) * light.ambient;
   float diffuseFactor = dot(normalize(vertexNormal), -light.direction);
   vec4 diffuseColor;
@@ -29,5 +40,7 @@ void main(void) {
     diffuseColor = vec4(0.f, 0.f, 0.f, 0.f);
   }
 
+
   color = texture2D(sampler, vertexTexture) * (ambientColor + diffuseColor);
+  */
 }
