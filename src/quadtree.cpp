@@ -1,7 +1,7 @@
 #include "quadtree.hpp"
 
 GLfloat Quadtree::minDistance = 65536.f;
-GLuint Quadtree::generatorProgram;
+GLuint Quadtree::heightmapProgram;
 
 
 
@@ -127,8 +127,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLushort), fis, GL_STATIC_DRAW);
 
   // Initialize framebuffer uniforms.
-  const GLuint meshPositionUniform = glGetUniformLocation(generatorProgram, "meshPosition");
-  const GLuint meshLengthUniform =   glGetUniformLocation(generatorProgram, "meshLength");
+  const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
+  const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
 
   // Render to framebuffer.
   glPushAttrib(GL_VIEWPORT);
@@ -136,7 +136,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glViewport(0, 0, 256, 256);
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
-  glUseProgram(generatorProgram);
+  glUseProgram(heightmapProgram);
   glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(a1, b1, 1.f)));
   glUniform1f( meshLengthUniform,   (a2 - a1));
   glBindTexture(GL_TEXTURE_2D, 0);
@@ -167,7 +167,7 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::initialize() {
-  generatorProgram = Display::shaders("heightmap.vert", "heightmap.frag");
+  heightmapProgram = Display::shaders("heightmap.vert", "heightmap.frag");
 }
 
 

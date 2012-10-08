@@ -20,7 +20,7 @@ using namespace glm;
 class Quadtree {
   public:
     static GLfloat minDistance;
-    static GLuint generatorProgram;
+    static GLuint heightmapProgram;
     Quadtree(GLfloat, GLfloat, GLfloat, GLfloat, GLuint);
     ~Quadtree();
     static GLvoid initialize();
