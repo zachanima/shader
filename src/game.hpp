@@ -10,7 +10,6 @@
 #include "quadtree.hpp"
 #include "light.hpp"
 #include "camera.hpp"
-#include "noise.hpp"
 
 #define WIDTH (1280)
 #define HEIGHT (720)

@@ -37,9 +37,6 @@ GLvoid Game::initialize() {
   light.ambient = 0.1f;
   light.diffuse = 0.75f;
 
-  // Initialize noise.
-  Noise::initialize();
-
   // Initialize quadtree class.
   Quadtree::initialize();
 

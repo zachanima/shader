@@ -111,7 +111,7 @@ in vec3 vertexPosition;
 out vec4 color;
 
 void main(void) {
-  float noise = simplex(vertexPosition, 24, 0.75f, 4.0f);
+  float noise = simplex(vertexPosition, 24, 0.75f, 0.25f);
   noise += 0.5f;
   noise /= 2.f;
   color = vec4(noise, noise, noise, 1.f);

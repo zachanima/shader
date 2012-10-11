@@ -33,8 +33,6 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   // Spherize front face, apply noise.
   for (GLuint v = 0; v < VERTICES; v++) {
     vs[v].r = spherize(vs[v].r);
-    // const GLfloat noise = Noise::noise(vs[v].r) / 16.f + 1.f;
-    // vs[v].r *= noise;
   }
 
   // Compute indices.

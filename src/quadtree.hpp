@@ -7,7 +7,6 @@
 
 #include "lwcppgl/display.hpp"
 
-#include "noise.hpp"
 #include "vertex.hpp"
 
 #define CHUNK_SIZE (16)
