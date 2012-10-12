@@ -159,7 +159,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Attach normalmap texture to framebuffer object.
@@ -180,8 +180,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glBindBuffer(GL_ARRAY_BUFFER, nfvbo);
   glBufferData(GL_ARRAY_BUFFER, 4 * 5 * sizeof(GLfloat), nfvs, GL_STATIC_DRAW);
 
-  // Initialize sampler uniform.
-  GLuint samplerUniform = glGetUniformLocation(normalmapProgram, "sampler");
+  // Initialize normalmap uniforms.
+  const GLuint samplerUniform = glGetUniformLocation(normalmapProgram, "sampler");
+  const GLuint levelUniform = glGetUniformLocation(normalmapProgram, "level");
 
   // Render to framebuffer.
   glPushAttrib(GL_VIEWPORT);
@@ -191,6 +192,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(normalmapProgram);
   glUniform1i(samplerUniform, 0);
+  glUniform1i(levelUniform, level);
   glBindTexture(GL_TEXTURE_2D, texture);
   glBindBuffer(GL_ARRAY_BUFFER, nfvbo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
