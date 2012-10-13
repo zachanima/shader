@@ -34,7 +34,7 @@ GLvoid Game::initialize() {
   // Initialize light.
   light.direction = vec3(0.f, 0.f, 1.f);
   light.color = vec3(1.f, 1.f, 1.f);
-  light.ambient = 0.1f;
+  light.ambient = 0.01f;
   light.diffuse = 0.75f;
 
   // Initialize quadtree class.
