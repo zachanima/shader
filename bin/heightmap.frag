@@ -121,7 +121,7 @@ void main(void) {
   float noise = simplex(vertexPosition, 24, 0.5f, 0.5f);
   noise += 0.5f;
   noise /= 2.f;
-  if (noise < 0.525f) {
+  if (noise > 0.525f) {
     noise = 0.525f;
   }
   color = vec4(noise, noise, noise, 1.f);

@@ -24,7 +24,7 @@ void main(void) {
   vec4 base = vec4(1.f, 1.f, 1.f, 1.f);
   vec3 bump = normalize(texture2D(sampler, vertexTexture).xyz * 2.f - 1.f);
   vec4 vAmbient = vec4(light.ambient * vec3(1.f, 1.f, 1.f), 1.f);
-  float diffuse = max(dot(lVec, bump), 0.f);
+  float diffuse = max(dot(lVec, bump + vertexNormal), 0.f);
   vec4 vDiffuse = vec4(light.diffuse * vec3(1.f, 1.f, 1.f) * diffuse, 1.f);
 
   color = vec4(vAmbient * base + vDiffuse * base);
