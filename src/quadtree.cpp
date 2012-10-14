@@ -76,36 +76,10 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
     vs[v].n = normalize(vs[v].n);
   }
 
-  // Initialize vertex buffer object.
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, VERTICES * sizeof(Vertex), vs, GL_STATIC_DRAW);
-
-  // Initialize index buffer object.
-  glGenBuffers(1, &ibo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), is, GL_STATIC_DRAW);
-
-  // Initialize texture.
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1, &heightmap);
-  glBindTexture(GL_TEXTURE_2D, heightmap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  // Initialize framebuffer object, attach texture.
+  // Initialize framebuffer object.
   GLuint fbo;
-  glGenFramebuffers(1, &fbo);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heightmap, 0);
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
-  glDrawBuffers(1, buffers);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glGenFramebuffers(1, &fbo);
 
   // Initialize framebuffer vertex buffer object.
   GLuint fvbo;
@@ -130,7 +104,74 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
   const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
 
-  // Render to framebuffer.
+  // Initialize vertexmap texture.
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &vertexmap);
+  glBindTexture(GL_TEXTURE_2D, vertexmap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 33, 33, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Attach vertexmap texture to framebuffer.
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vertexmap, 0);
+  glDrawBuffers(1, buffers);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // Render vertexmap to framebuffer.
+  glPushAttrib(GL_VIEWPORT);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glViewport(0, 0, 33, 33);
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(heightmapProgram);
+  glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(a1, b1, 1.f)));
+  glUniform1f( meshLengthUniform,   (a2 - a1));
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, fvbo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  glPopAttrib();
+
+  // Read vertexmap pixel data.
+  GLfloat *ps = new GLfloat[33 * 33 * 4];
+  glReadPixels(0, 0, 33, 33, GL_RGBA, GL_FLOAT, ps);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  for (size_t i = 0; i < 33 * 33 * 4; i += 4) {
+    const GLfloat noise = 1.f - ps[i] / 1.f + 1.f;
+    vs[i / 4].r *= noise;
+  }
+  delete ps;
+
+  // Initialize heightmap texture.
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &heightmap);
+  glBindTexture(GL_TEXTURE_2D, heightmap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Attach heightmap texture to framebuffer.
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heightmap, 0);
+  glDrawBuffers(1, buffers);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+  // Render heightmap to framebuffer.
   glPushAttrib(GL_VIEWPORT);
   glBindFramebuffer(GL_FRAMEBUFFER, fbo);
   glViewport(0, 0, 256, 256);
@@ -212,6 +253,16 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glDeleteFramebuffers(1, &fbo);
   glDeleteBuffers(1, &fvbo);
   glDeleteBuffers(1, &fibo);
+
+  // Initialize vertex buffer object.
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, VERTICES * sizeof(Vertex), vs, GL_STATIC_DRAW);
+
+  // Initialize index buffer object.
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, INDICES * sizeof(GLuint), is, GL_STATIC_DRAW);
 }
 
 

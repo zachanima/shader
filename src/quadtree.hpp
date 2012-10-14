@@ -34,6 +34,7 @@ class Quadtree {
     GLuint level;
     GLuint vbo; // Vertex buffer object.
     GLuint ibo; // Index buffer object.
+    GLuint vertexmap;
     GLuint heightmap;
     GLuint normalmap;
     GLvoid divide();
