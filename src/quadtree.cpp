@@ -15,18 +15,17 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   box[3] = b2;
   this->level = level - 1;
 
+  // Nullify children.
   for (GLuint i = 0; i < 4; i++) {
     children[i] = NULL;
   }
 
-
   // Generate spherized front face.
-  GLuint v = 0;
+  size_t i = 0;
   for (GLuint b = 0; b < VERTICES_PER_SIDE; b++) {
-    for (GLuint a = 0; a < VERTICES_PER_SIDE; a++) {
-      vs[v].r = spherize(vec3(a1 + L * a, b1 + L * b, 1.f));
-      vs[v].t = vec2((GLfloat)a / (GLfloat)CHUNK_SIZE, (GLfloat)b / (GLfloat)CHUNK_SIZE);
-      v++;
+    for (GLuint a = 0; a < VERTICES_PER_SIDE; a++, i++) {
+      vs[i].r = spherize(vec3(a1 + L * a, b1 + L * b, 1.f));
+      vs[i].t = vec2((GLfloat)a / (GLfloat)CHUNK_SIZE, (GLfloat)b / (GLfloat)CHUNK_SIZE);
     }
   }
 
@@ -288,8 +287,6 @@ GLvoid Quadtree::render() {
 
 
 GLvoid Quadtree::computeVertexmap() {
-  const GLuint WIDTH = CHUNK_SIZE + 1;
-  const GLuint HEIGHT = CHUNK_SIZE + 1;
   const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
   const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
@@ -303,7 +300,8 @@ GLvoid Quadtree::computeVertexmap() {
   GLuint fbo;
   GLuint ibo;
   GLuint vbo;
-  GLfloat ps[WIDTH * HEIGHT * 4];
+  GLuint vertexmap;
+  GLfloat ps[VERTICES * 4];
 
   // Initialize vertexmap texture.
   glEnable(GL_TEXTURE_2D);
@@ -314,7 +312,7 @@ GLvoid Quadtree::computeVertexmap() {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   // TODO: Use GL_R32F internal format, GL_RED type; possibly OpenGL 3.0+.
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, VERTICES_PER_SIDE, VERTICES_PER_SIDE, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Initialize framebuffer object, attach vertexmap texture.
@@ -335,7 +333,7 @@ GLvoid Quadtree::computeVertexmap() {
 
   // Render vertexmap to framebuffer.
   glPushAttrib(GL_VIEWPORT);
-  glViewport(0, 0, WIDTH, HEIGHT);
+  glViewport(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE);
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(heightmapProgram);
@@ -351,8 +349,8 @@ GLvoid Quadtree::computeVertexmap() {
   glPopAttrib();
 
   // Read vertexmap pixel data.
-  glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, ps);
-  for (size_t i = 0; i < WIDTH * HEIGHT * 4; i += 4) {
+  glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RGBA, GL_FLOAT, ps);
+  for (size_t i = 0; i < VERTICES * 4; i += 4) {
     const GLfloat noise = 2.f - ps[i];
     this->vs[i / 4].r *= noise;
   }
