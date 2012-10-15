@@ -13,26 +13,21 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   box[1] = b1;
   box[2] = a2;
   box[3] = b2;
+  this->level = level - 1;
 
   for (GLuint i = 0; i < 4; i++) {
     children[i] = NULL;
   }
 
-  this->level = level - 1;
 
-  // Generate front face.
+  // Generate spherized front face.
   GLuint v = 0;
   for (GLuint b = 0; b < VERTICES_PER_SIDE; b++) {
     for (GLuint a = 0; a < VERTICES_PER_SIDE; a++) {
-      vs[v].r = vec3(a1 + L * a, b1 + L * b, 1.f);
+      vs[v].r = spherize(vec3(a1 + L * a, b1 + L * b, 1.f));
       vs[v].t = vec2((GLfloat)a / (GLfloat)CHUNK_SIZE, (GLfloat)b / (GLfloat)CHUNK_SIZE);
       v++;
     }
-  }
-
-  // Spherize front face, apply noise.
-  for (GLuint v = 0; v < VERTICES; v++) {
-    vs[v].r = spherize(vs[v].r);
   }
 
   // Compute indices.
@@ -76,6 +71,8 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
     vs[v].n = normalize(vs[v].n);
   }
 
+  computeVertexmap();
+
   // Initialize framebuffer object.
   GLuint fbo;
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
@@ -104,54 +101,6 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
   const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
 
-  // Initialize vertexmap texture.
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1, &vertexmap);
-  glBindTexture(GL_TEXTURE_2D, vertexmap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 33, 33, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  // Attach vertexmap texture to framebuffer.
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vertexmap, 0);
-  glDrawBuffers(1, buffers);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  // Render vertexmap to framebuffer.
-  glPushAttrib(GL_VIEWPORT);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  glViewport(0, 0, 33, 33);
-  glClearColor(0.f, 0.f, 0.f, 1.f);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glUseProgram(heightmapProgram);
-  glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(a1, b1, 1.f)));
-  glUniform1f( meshLengthUniform,   (a2 - a1));
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, fvbo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
-  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
-  glDisableVertexAttribArray(0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glUseProgram(0);
-  glPopAttrib();
-
-  // Read vertexmap pixel data.
-  GLfloat *ps = new GLfloat[33 * 33 * 4];
-  glReadPixels(0, 0, 33, 33, GL_RGBA, GL_FLOAT, ps);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  for (size_t i = 0; i < 33 * 33 * 4; i += 4) {
-    const GLfloat noise = 1.f - ps[i] / 1.f + 1.f;
-    vs[i / 4].r *= noise;
-  }
-  delete ps;
 
   // Initialize heightmap texture.
   glEnable(GL_TEXTURE_2D);
@@ -334,6 +283,82 @@ GLvoid Quadtree::render() {
       children[i]->render();
     }
   }
+}
+
+
+
+GLvoid Quadtree::computeVertexmap() {
+  const GLuint WIDTH = CHUNK_SIZE + 1;
+  const GLuint HEIGHT = CHUNK_SIZE + 1;
+  const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
+  const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
+  const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+  const GLushort is[] = { 0, 1, 2, 3 };
+  const GLfloat vs[] = {
+    -1.f,  1.f,  0.f,
+    -1.f, -1.f,  0.f,
+     1.f,  1.f,  0.f,
+     1.f, -1.f,  0.f
+  };
+  GLuint fbo;
+  GLuint ibo;
+  GLuint vbo;
+  GLfloat ps[WIDTH * HEIGHT * 4];
+
+  // Initialize vertexmap texture.
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &vertexmap);
+  glBindTexture(GL_TEXTURE_2D, vertexmap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // TODO: Use GL_R32F internal format, GL_RED type; possibly OpenGL 3.0+.
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Initialize framebuffer object, attach vertexmap texture.
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vertexmap, 0);
+  glDrawBuffers(1, buffers);
+
+  // Initialize vertex buffer object.
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), vs, GL_STATIC_DRAW);
+
+  // Initialize index buffer object.
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLushort), is, GL_STATIC_DRAW);
+
+  // Render vertexmap to framebuffer.
+  glPushAttrib(GL_VIEWPORT);
+  glViewport(0, 0, WIDTH, HEIGHT);
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(heightmapProgram);
+  glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(box[0], box[1], 1.f)));
+  glUniform1f(meshLengthUniform, (box[2] - box[0]));
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  glPopAttrib();
+
+  // Read vertexmap pixel data.
+  glReadPixels(0, 0, WIDTH, HEIGHT, GL_RGBA, GL_FLOAT, ps);
+  for (size_t i = 0; i < WIDTH * HEIGHT * 4; i += 4) {
+    const GLfloat noise = 2.f - ps[i];
+    this->vs[i / 4].r *= noise;
+  }
+
+  // Unbind framebuffer object.
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 
