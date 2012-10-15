@@ -71,23 +71,12 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   }
 
   computeVertexmap();
+  generateHeightmap();
 
   // Initialize framebuffer object.
   GLuint fbo;
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
   glGenFramebuffers(1, &fbo);
-
-  // Initialize framebuffer vertex buffer object.
-  GLuint fvbo;
-  const GLfloat fvs[] = {
-    -1.f,  1.f, 0.f,
-    -1.f, -1.f, 0.f,
-     1.f,  1.f, 0.f,
-     1.f, -1.f, 0.f
-  };
-  glGenBuffers(1, &fvbo);
-  glBindBuffer(GL_ARRAY_BUFFER, fvbo);
-  glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), fvs, GL_STATIC_DRAW);
 
   // Initialize framebuffer index buffer object.
   GLuint fibo;
@@ -95,51 +84,6 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glGenBuffers(1, &fibo);
   glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLushort), fis, GL_STATIC_DRAW);
-
-  // Initialize framebuffer uniforms.
-  const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
-  const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
-
-
-  // Initialize heightmap texture.
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1, &heightmap);
-  glBindTexture(GL_TEXTURE_2D, heightmap);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glBindTexture(GL_TEXTURE_2D, 0);
-
-  // Attach heightmap texture to framebuffer.
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heightmap, 0);
-  glDrawBuffers(1, buffers);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-  // Render heightmap to framebuffer.
-  glPushAttrib(GL_VIEWPORT);
-  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-  glViewport(0, 0, 256, 256);
-  glClearColor(0.f, 0.f, 0.f, 1.f);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glUseProgram(heightmapProgram);
-  glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(a1, b1, 1.f)));
-  glUniform1f( meshLengthUniform,   (a2 - a1));
-  glBindTexture(GL_TEXTURE_2D, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, fvbo);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, fibo);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
-  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
-  glDisableVertexAttribArray(0);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glUseProgram(0);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glPopAttrib();
 
   // Initialize normalmap texture;
   glEnable(GL_TEXTURE_2D);
@@ -199,7 +143,6 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   glPopAttrib();
 
   glDeleteFramebuffers(1, &fbo);
-  glDeleteBuffers(1, &fvbo);
   glDeleteBuffers(1, &fibo);
 
   // Initialize vertex buffer object.
@@ -355,8 +298,80 @@ GLvoid Quadtree::computeVertexmap() {
     this->vs[i / 4].r *= noise;
   }
 
-  // Unbind framebuffer object.
+  // Unbind framebuffer object, delete buffers.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteBuffers(1, &vbo);
+  glDeleteBuffers(1, &ibo);
+}
+
+
+
+GLvoid Quadtree::generateHeightmap() {
+  const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
+  const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
+  const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+  GLuint fbo;
+  GLuint ibo;
+  GLuint vbo;
+  const GLushort is[] = { 0, 1, 2, 3 };
+  const GLfloat vs[] = {
+    -1.f,  1.f,  0.f,
+    -1.f, -1.f,  0.f,
+     1.f,  1.f,  0.f,
+     1.f, -1.f,  0.f
+  };
+
+  // Initialize heightmap texture.
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &heightmap);
+  glBindTexture(GL_TEXTURE_2D, heightmap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Initialize framebuffer object, attach heightmap texture.
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, heightmap, 0);
+  glDrawBuffers(1, buffers);
+
+  // Initialize vertex buffer object.
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(GLfloat), vs, GL_STATIC_DRAW);
+
+  // Initialize index buffer object.
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLushort), is, GL_STATIC_DRAW);
+
+  // Render heightmap to framebuffer.
+  glPushAttrib(GL_VIEWPORT);
+  glViewport(0, 0, 256, 256);
+  glClearColor(0.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(heightmapProgram);
+  glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(box[0], box[1], 1.f)));
+  glUniform1f( meshLengthUniform,   (box[2] - box[0]));
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid *)0);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  glPopAttrib();
+
+  // Unbind framebuffer object, delete buffers.
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteBuffers(1, &vbo);
+  glDeleteBuffers(1, &ibo);
 }
 
 
