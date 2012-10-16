@@ -23,19 +23,12 @@ void main(void) {
   vec4 rock =    vec4(0.2f,  0.2f, 0.2f, 1.f);
   vec4 snow =    vec4(1.f,   1.f,  1.f,  1.f);
 
-  if (height < -0.25) {
-    color = mix(deeps, shallow, scale(height, -1.f, -0.25f));
-  } else if (height < 0.f) {
-    color = mix(shallow, shore, scale(height, -0.25f, 0.f));
-  } else if (height < 0.0625f) {
-    color = mix(shore, sand, scale(height, 0.f, 0.0625f));
-  } else if (height < 0.125f) {
-    color = mix(sand, grass, scale(height, 0.0625f, 0.125f));
-  } else if (height < 0.375f) {
-    color = mix(grass, dirt, scale(height, 0.125f, 0.375f));
-  } else if (height < 0.5f) {
-    color = mix(dirt, rock, scale(height, 0.375f, 0.5f));
-  } else {
-    color = mix(rock, snow, scale(height, 0.5f, 1.f));
+  if (height < -0.25) {          color = mix(deeps,   shallow, scale(height, -1.f, -0.25f));
+  } else if (height < 0.f) {     color = mix(shallow, shore,   scale(height, -0.25f, 0.f));
+  } else if (height < 0.0625f) { color = mix(shore,   sand,    scale(height, 0.f, 0.0625f));
+  } else if (height < 0.125f) {  color = mix(sand,    grass,   scale(height, 0.0625f, 0.125f));
+  } else if (height < 0.375f) {  color = mix(grass,   dirt,    scale(height, 0.125f, 0.375f));
+  } else if (height < 0.5f) {    color = mix(dirt,    rock,    scale(height, 0.375f, 0.5f));
+  } else {                       color = mix(rock,    snow,    scale(height, 0.5f, 1.f));
   }
 }

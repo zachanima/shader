@@ -77,6 +77,9 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   generateNormalmap(level);
   generateColormap();
 
+  // Delete heightmap texture.
+  glDeleteTextures(1, &heightmap);
+
   // Initialize vertex buffer object.
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
@@ -93,6 +96,13 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
 Quadtree::~Quadtree() {
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ibo);
+  glDeleteTextures(1, &normalmap);
+  glDeleteTextures(1, &colormap);
+
+  for (GLuint i = 0; i < 4; i++) {
+    delete children[i];
+    children[i] = NULL;
+  }
 }
 
 
@@ -186,7 +196,7 @@ GLvoid Quadtree::computeVertexmap() {
   GLuint ibo;
   GLuint vbo;
   GLuint vertexmap;
-  GLfloat ps[VERTICES * 4];
+  GLfloat ps[VERTICES];
 
   // Initialize vertexmap texture.
   glEnable(GL_TEXTURE_2D);
@@ -197,7 +207,7 @@ GLvoid Quadtree::computeVertexmap() {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   // TODO: Use GL_R32F internal format, GL_RED type; possibly OpenGL 3.0+.
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, VERTICES_PER_SIDE, VERTICES_PER_SIDE, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, VERTICES_PER_SIDE, VERTICES_PER_SIDE, 0, GL_RGBA, GL_FLOAT, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Initialize framebuffer object, attach vertexmap texture.
@@ -234,17 +244,19 @@ GLvoid Quadtree::computeVertexmap() {
   glPopAttrib();
 
   // Read vertexmap pixel data.
-  glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RGBA, GL_FLOAT, ps);
-  for (size_t i = 0; i < VERTICES * 4; i += 4) {
+  // FIXME: glReadPixels is current bottleneck.
+  glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RED, GL_FLOAT, ps);
+  for (size_t i = 0; i < VERTICES; i++) {
     const GLfloat noise = 1.f + ps[i] / 16.f;
-    this->vs[i / 4].r *= noise;
+    this->vs[i].r *= noise;
   }
 
-  // Unbind framebuffer object, delete buffers.
+  // Unbind framebuffer object, delete buffers and texture.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDeleteFramebuffers(1, &fbo);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ibo);
+  glDeleteTextures(1, &vertexmap);
 }
 
 
