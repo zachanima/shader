@@ -3,6 +3,7 @@
 GLfloat Quadtree::minDistance = 65536.f;
 GLuint Quadtree::heightmapProgram;
 GLuint Quadtree::normalmapProgram;
+GLuint Quadtree::colormapProgram;
 
 
 
@@ -73,6 +74,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
   computeVertexmap();
   generateHeightmap();
   generateNormalmap(level);
+  generateColormap();
 
   // Initialize vertex buffer object.
   glGenBuffers(1, &vbo);
@@ -97,6 +99,7 @@ Quadtree::~Quadtree() {
 GLvoid Quadtree::initialize() {
   heightmapProgram = Display::shaders("heightmap.vert", "heightmap.frag");
   normalmapProgram = Display::shaders("normalmap.vert", "normalmap.frag");
+  colormapProgram =  Display::shaders("colormap.vert",  "colormap.frag");
 }
 
 
@@ -130,7 +133,11 @@ GLvoid Quadtree::update(vec3 camera) {
 
 GLvoid Quadtree::render() {
   if (children[0] == NULL) {
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, normalmap);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, colormap);
+
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
     glEnableVertexAttribArray(0);
@@ -147,6 +154,10 @@ GLvoid Quadtree::render() {
     glDisableVertexAttribArray(2);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, 0);
 
   } else {
@@ -223,7 +234,7 @@ GLvoid Quadtree::computeVertexmap() {
   // Read vertexmap pixel data.
   glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RGBA, GL_FLOAT, ps);
   for (size_t i = 0; i < VERTICES * 4; i += 4) {
-    const GLfloat noise = 2.f - ps[i];
+    const GLfloat noise = 1.f + ps[i] / 4.f;
     this->vs[i / 4].r *= noise;
   }
 
@@ -355,6 +366,75 @@ GLvoid Quadtree::generateNormalmap(GLuint level) {
   glUseProgram(normalmapProgram);
   glUniform1i(samplerUniform, 0);
   glUniform1i(levelUniform, level);
+  glBindTexture(GL_TEXTURE_2D, heightmap);
+  glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(1);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)0);
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid *)12);
+  glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_SHORT, (GLvoid *)0);
+  glDisableVertexAttribArray(0);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glUseProgram(0);
+  glPopAttrib();
+
+  // Unbind framebuffer object, delete buffers.
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glDeleteFramebuffers(1, &fbo);
+  glDeleteBuffers(1, &vbo);
+  glDeleteBuffers(1, &ibo);
+}
+
+
+
+GLvoid Quadtree::generateColormap() {
+  const GLuint samplerUniform = glGetUniformLocation(colormapProgram, "sampler");
+  const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
+  const GLushort is[] = { 0, 1, 2, 3 };
+  const GLfloat vs[] = {
+    -1.f,  1.f, 0.f,  0.f,  1.f,
+    -1.f, -1.f, 0.f,  0.f,  0.f,
+     1.f,  1.f, 0.f,  1.f,  1.f,
+     1.f, -1.f, 0.f,  1.f,  0.f
+  };
+  GLuint fbo;
+  GLuint ibo;
+  GLuint vbo;
+
+  // Initialize colormap texture.
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &colormap);
+  glBindTexture(GL_TEXTURE_2D, colormap);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glBindTexture(GL_TEXTURE_2D, 0);
+
+  // Initialize framebuffer object, attach normalmap texture.
+  glGenFramebuffers(1, &fbo);
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colormap, 0);
+  glDrawBuffers(1, buffers);
+
+  // Initialize vertex buffer object.
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, 4 * 5 * sizeof(GLfloat), vs, GL_STATIC_DRAW);
+
+  // Initialize index buffer object.
+  glGenBuffers(1, &ibo);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLushort), is, GL_STATIC_DRAW);
+
+  // Render normalmap to framebuffer.
+  glPushAttrib(GL_VIEWPORT);
+  glViewport(0, 0, 256, 256);
+  glClearColor(1.f, 0.f, 0.f, 1.f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glUseProgram(colormapProgram);
+  glUniform1i(samplerUniform, 0);
   glBindTexture(GL_TEXTURE_2D, heightmap);
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);

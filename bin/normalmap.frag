@@ -41,7 +41,7 @@ void main(void) {
   float dX = tr + 2.f * r + br - tl - 2.f * l - bl;
   float dY = bl + 2.f * b + br - tl - 2.f * t - tr;
 
-  vec4 normal = vec4(normalize(vec3(dX, dY, 1.f / normalStrength)), 1.f);
+  vec4 normal = vec4(normalize(vec3(dX, dY, -1.f / normalStrength)), 1.f);
 
   normal *= 0.5f;
   normal += 0.5f;

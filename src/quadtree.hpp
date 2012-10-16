@@ -21,6 +21,7 @@ class Quadtree {
     static GLfloat minDistance;
     static GLuint heightmapProgram;
     static GLuint normalmapProgram;
+    static GLuint colormapProgram;
     Quadtree(GLfloat, GLfloat, GLfloat, GLfloat, GLuint);
     ~Quadtree();
     static GLvoid initialize();
@@ -36,9 +37,11 @@ class Quadtree {
     GLuint ibo; // Index buffer object.
     GLuint heightmap;
     GLuint normalmap;
+    GLuint colormap;
     GLvoid computeVertexmap();
     GLvoid generateHeightmap();
     GLvoid generateNormalmap(GLuint);
+    GLvoid generateColormap();
     GLvoid divide();
     const GLfloat distance2(vec3);
     const static vec3 spherize(vec3);

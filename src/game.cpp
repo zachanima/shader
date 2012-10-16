@@ -8,13 +8,14 @@ Quadtree *Game::quadtree = NULL;
 
 
 GLvoid Game::initialize() {
-  GLuint perspectiveUniform;
-  GLuint samplerUniform;
   const GLfloat FOV = 45.f;
   const GLfloat ASPECT = (GLfloat)WIDTH / (GLfloat)HEIGHT;
   const GLfloat ZNEAR = 1.f / 65536.f;
   const GLfloat ZFAR = 65536.f;
   const mat4 projectionMatrix = perspective(FOV, ASPECT, ZNEAR, ZFAR);
+  GLuint perspectiveUniform;
+  GLuint normalmapUniform;
+  GLuint colormapUniform;
 
   // Initialize shaders.
   program = Display::shaders("render.vert", "render.frag");
@@ -26,7 +27,8 @@ GLvoid Game::initialize() {
   light.ambientUniform =   glGetUniformLocation(program, "light.ambient");
   light.diffuseUniform =   glGetUniformLocation(program, "light.diffuse");
   perspectiveUniform =     glGetUniformLocation(program, "perspective");
-  samplerUniform =         glGetUniformLocation(program, "sampler");
+  normalmapUniform =       glGetUniformLocation(program, "normalmap");
+  colormapUniform =        glGetUniformLocation(program, "colormap");
   
   // Initialize camera.
   camera.position = vec3(0.25f, 0.375f, 4.f);
@@ -44,9 +46,10 @@ GLvoid Game::initialize() {
   quadtree = new Quadtree(-1.f, -1.f, 1.f, 1.f, 16);
   quadtree->update(camera.position);
 
-  // Apply perspective uniform.
+  // Apply uniforms.
   glUseProgram(program);
-  glUniform1i(samplerUniform, 0);
+  glUniform1i(normalmapUniform, 0);
+  glUniform1i(colormapUniform, 1);
   glUniformMatrix4fv(perspectiveUniform, 1, GL_FALSE, value_ptr(projectionMatrix));
   glUseProgram(0);
 }
@@ -72,7 +75,7 @@ GLvoid Game::update() {
 
 
 GLvoid Game::render() {
-  const vec3 lightDirection = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 1.f + cos(SDL_GetTicks() / 1000.f) * 2.f, 1.f));
+  const vec3 lightDirection = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 1.f + cos(SDL_GetTicks() / 1000.f) * 2.f, -2.f));
 
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClearDepth(1.f);
@@ -81,6 +84,7 @@ GLvoid Game::render() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LEQUAL);
   glEnable(GL_CULL_FACE);
+  glEnable(GL_TEXTURE_2D);
 
   glUseProgram(program);
 
