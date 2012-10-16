@@ -236,7 +236,7 @@ GLvoid Quadtree::computeVertexmap() {
   // Read vertexmap pixel data.
   glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RGBA, GL_FLOAT, ps);
   for (size_t i = 0; i < VERTICES * 4; i += 4) {
-    const GLfloat noise = 1.f + ps[i] / 4.f;
+    const GLfloat noise = 1.f + ps[i] / 16.f;
     this->vs[i / 4].r *= noise;
   }
 
