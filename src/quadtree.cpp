@@ -1,6 +1,7 @@
 #include "quadtree.hpp"
 
 GLfloat Quadtree::minDistance = 65536.f;
+GLuint Quadtree::vertexmapProgram;
 GLuint Quadtree::heightmapProgram;
 GLuint Quadtree::normalmapProgram;
 GLuint Quadtree::colormapProgram;
@@ -97,6 +98,7 @@ Quadtree::~Quadtree() {
 
 
 GLvoid Quadtree::initialize() {
+  vertexmapProgram = Display::shaders("vertexmap.vert", "heightmap.frag");
   heightmapProgram = Display::shaders("heightmap.vert", "heightmap.frag");
   normalmapProgram = Display::shaders("normalmap.vert", "normalmap.frag");
   colormapProgram =  Display::shaders("colormap.vert",  "colormap.frag");
@@ -170,8 +172,8 @@ GLvoid Quadtree::render() {
 
 
 GLvoid Quadtree::computeVertexmap() {
-  const GLuint meshPositionUniform = glGetUniformLocation(heightmapProgram, "meshPosition");
-  const GLuint meshLengthUniform =   glGetUniformLocation(heightmapProgram, "meshLength");
+  const GLuint meshPositionUniform = glGetUniformLocation(vertexmapProgram, "meshPosition");
+  const GLuint meshLengthUniform =   glGetUniformLocation(vertexmapProgram, "meshLength");
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
   const GLushort is[] = { 0, 1, 2, 3 };
   const GLfloat vs[] = {
@@ -219,7 +221,7 @@ GLvoid Quadtree::computeVertexmap() {
   glViewport(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE);
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
-  glUseProgram(heightmapProgram);
+  glUseProgram(vertexmapProgram);
   glUniform3fv(meshPositionUniform, 1, value_ptr(vec3(box[0], box[1], 1.f)));
   glUniform1f(meshLengthUniform, (box[2] - box[0]));
   glEnableVertexAttribArray(0);

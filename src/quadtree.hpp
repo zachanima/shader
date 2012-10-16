@@ -19,6 +19,7 @@ using namespace glm;
 class Quadtree {
   public:
     static GLfloat minDistance;
+    static GLuint vertexmapProgram;
     static GLuint heightmapProgram;
     static GLuint normalmapProgram;
     static GLuint colormapProgram;
