@@ -273,7 +273,7 @@ GLvoid Quadtree::generateHeightmap() {
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   // TODO: Use GL_R32F internal format, GL_RED type. Possibly OpenGL 3.0+
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Initialize framebuffer object, attach heightmap texture.
@@ -294,7 +294,7 @@ GLvoid Quadtree::generateHeightmap() {
 
   // Render heightmap to framebuffer.
   glPushAttrib(GL_VIEWPORT);
-  glViewport(0, 0, 256, 256);
+  glViewport(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(heightmapProgram);
@@ -321,6 +321,7 @@ GLvoid Quadtree::generateHeightmap() {
 GLvoid Quadtree::generateNormalmap(GLuint level) {
   const GLuint samplerUniform = glGetUniformLocation(normalmapProgram, "sampler");
   const GLuint levelUniform = glGetUniformLocation(normalmapProgram, "level");
+  const GLuint textureSizeUniform = glGetUniformLocation(normalmapProgram, "textureSize");
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
   const GLushort is[] = { 0, 1, 2, 3 };
   const GLfloat vs[] = {
@@ -341,7 +342,7 @@ GLvoid Quadtree::generateNormalmap(GLuint level) {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Initialize framebuffer object, attach normalmap texture.
@@ -362,12 +363,13 @@ GLvoid Quadtree::generateNormalmap(GLuint level) {
 
   // Render normalmap to framebuffer.
   glPushAttrib(GL_VIEWPORT);
-  glViewport(0, 0, 256, 256);
+  glViewport(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
   glClearColor(1.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(normalmapProgram);
   glUniform1i(samplerUniform, 0);
   glUniform1i(levelUniform, level);
+  glUniform1f(textureSizeUniform, (GLfloat)TEXTURE_SIZE);
   glBindTexture(GL_TEXTURE_2D, heightmap);
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
@@ -411,7 +413,7 @@ GLvoid Quadtree::generateColormap() {
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, TEXTURE_SIZE, TEXTURE_SIZE, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glBindTexture(GL_TEXTURE_2D, 0);
 
   // Initialize framebuffer object, attach normalmap texture.
@@ -432,7 +434,7 @@ GLvoid Quadtree::generateColormap() {
 
   // Render normalmap to framebuffer.
   glPushAttrib(GL_VIEWPORT);
-  glViewport(0, 0, 256, 256);
+  glViewport(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
   glClearColor(1.f, 0.f, 0.f, 1.f);
   glClear(GL_COLOR_BUFFER_BIT);
   glUseProgram(colormapProgram);

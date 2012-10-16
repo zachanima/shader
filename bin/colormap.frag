@@ -33,9 +33,9 @@ void main(void) {
     color = mix(sand, grass, scale(height, 0.0625f, 0.125f));
   } else if (height < 0.375f) {
     color = mix(grass, dirt, scale(height, 0.125f, 0.375f));
-  } else if (height < 0.75f) {
-    color = mix(dirt, rock, scale(height, 0.375f, 0.75f));
+  } else if (height < 0.5f) {
+    color = mix(dirt, rock, scale(height, 0.375f, 0.5f));
   } else {
-    color = mix(rock, snow, scale(height, 0.75f, 1.f));
+    color = mix(rock, snow, scale(height, 0.5f, 1.f));
   }
 }

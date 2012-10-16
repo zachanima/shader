@@ -7,11 +7,12 @@ out vec4 color;
 
 uniform sampler2D sampler;
 uniform int level;
+uniform float textureSize;
 
-const float texel = 1.f / 256.f;
 const float normalStrength = 12.f;
 
 void main(void) {
+  const float texel = 1.f / textureSize;
   float intensity = 65536 >> level;
   float tl;
   float l;
