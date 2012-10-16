@@ -64,6 +64,8 @@ GLvoid Game::update() {
   quadtree->update(camera.position);
   if (Keyboard::isKeyDown(KEY_W)) { camera.position.z -= 0.0005f * Quadtree::minDistance * delta; }
   if (Keyboard::isKeyDown(KEY_S)) { camera.position.z += 0.0005f * Quadtree::minDistance * delta; }
+  if (Keyboard::isKeyDown(KEY_A)) { camera.position.x -= 0.00025f * Quadtree::minDistance * delta; }
+  if (Keyboard::isKeyDown(KEY_D)) { camera.position.x += 0.00025f * Quadtree::minDistance * delta; }
 
   // Debug controls.
   if (Keyboard::isKeyDown(KEY_R)) { light.ambient += 0.0001f * delta; }
