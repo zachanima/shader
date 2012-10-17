@@ -4,6 +4,7 @@
 struct Camera {
   // Attributes.
   vec3 position;
+  quat orientation;
 
   // Uniforms.
   GLuint positionUniform;

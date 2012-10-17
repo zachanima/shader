@@ -14,7 +14,9 @@ void Keyboard::update() {
         case SDLK_DOWN: key[KEY_DOWN] = true; break;
         case SDLK_a: key[KEY_A] = true; break;
         case SDLK_d: key[KEY_D] = true; break;
+        case SDLK_e: key[KEY_E] = true; break;
         case SDLK_f: key[KEY_F] = true; break;
+        case SDLK_q: key[KEY_Q] = true; break;
         case SDLK_r: key[KEY_R] = true; break;
         case SDLK_s: key[KEY_S] = true; break;
         case SDLK_w: key[KEY_W] = true; break;
@@ -30,7 +32,9 @@ void Keyboard::update() {
         case SDLK_DOWN: key[KEY_DOWN] = false; break;
         case SDLK_a: key[KEY_A] = false; break;
         case SDLK_d: key[KEY_D] = false; break;
+        case SDLK_e: key[KEY_E] = false; break;
         case SDLK_f: key[KEY_F] = false; break;
+        case SDLK_q: key[KEY_Q] = false; break;
         case SDLK_r: key[KEY_R] = false; break;
         case SDLK_s: key[KEY_S] = false; break;
         case SDLK_w: key[KEY_W] = false; break;

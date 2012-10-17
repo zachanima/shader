@@ -3,6 +3,7 @@
 Camera Game::camera;
 Light Game::light;
 GLuint Game::program;
+GLuint Game::viewUniform;
 Quadtree *Game::quadtree = NULL;
 
 
@@ -12,8 +13,15 @@ GLvoid Game::initialize() {
   const GLfloat ASPECT = (GLfloat)WIDTH / (GLfloat)HEIGHT;
   const GLfloat ZNEAR = 1.f / 65536.f;
   const GLfloat ZFAR = 65536.f;
-  const mat4 projectionMatrix = perspective(FOV, ASPECT, ZNEAR, ZFAR);
-  GLuint perspectiveUniform;
+  const mat4 model = mat4(
+    vec4(1.f, 0.f, 0.f, 0.f),
+    vec4(0.f, 1.f, 0.f, 0.f),
+    vec4(0.f, 0.f, 1.f, 0.f),
+    vec4(0.f, 0.f, 0.f, 1.f)
+  );
+  const mat4 projection = perspective(FOV, ASPECT, ZNEAR, ZFAR);
+  GLuint modelUniform;
+  GLuint projectionUniform;
   GLuint normalmapUniform;
   GLuint colormapUniform;
 
@@ -26,12 +34,14 @@ GLvoid Game::initialize() {
   light.colorUniform =     glGetUniformLocation(program, "light.color");
   light.ambientUniform =   glGetUniformLocation(program, "light.ambient");
   light.diffuseUniform =   glGetUniformLocation(program, "light.diffuse");
-  perspectiveUniform =     glGetUniformLocation(program, "perspective");
+  modelUniform =           glGetUniformLocation(program, "model");
+  viewUniform =            glGetUniformLocation(program, "view");
+  projectionUniform =      glGetUniformLocation(program, "projection");
   normalmapUniform =       glGetUniformLocation(program, "normalmap");
   colormapUniform =        glGetUniformLocation(program, "colormap");
   
   // Initialize camera.
-  camera.position = vec3(0.25f, 0.375f, 4.f);
+  camera.position = vec3(0.f, 0.f, 16.f);
 
   // Initialize light.
   light.direction = vec3(0.f, 0.f, 1.f);
@@ -50,7 +60,8 @@ GLvoid Game::initialize() {
   glUseProgram(program);
   glUniform1i(normalmapUniform, 0);
   glUniform1i(colormapUniform, 1);
-  glUniformMatrix4fv(perspectiveUniform, 1, GL_FALSE, value_ptr(projectionMatrix));
+  glUniformMatrix4fv(modelUniform, 1, GL_FALSE, value_ptr(model));
+  glUniformMatrix4fv(projectionUniform, 1, GL_FALSE, value_ptr(projection));
   glUseProgram(0);
 }
 
@@ -62,14 +73,13 @@ GLvoid Game::update() {
   ticks = SDL_GetTicks();
 
   quadtree->update(camera.position);
-  if (Keyboard::isKeyDown(KEY_W)) { camera.position.z -= 0.0005f * Quadtree::minDistance * delta; }
-  if (Keyboard::isKeyDown(KEY_S)) { camera.position.z += 0.0005f * Quadtree::minDistance * delta; }
-  if (Keyboard::isKeyDown(KEY_A)) { camera.position.x -= 0.00025f * Quadtree::minDistance * delta; }
-  if (Keyboard::isKeyDown(KEY_D)) { camera.position.x += 0.00025f * Quadtree::minDistance * delta; }
+  if (Keyboard::isKeyDown(KEY_W)) { offsetOrientation(vec3( 1.f, 0.f,  0.f), 0.00025f * delta); }
+  if (Keyboard::isKeyDown(KEY_S)) { offsetOrientation(vec3(-1.f, 0.f,  0.f), 0.00025f * delta); }
+  if (Keyboard::isKeyDown(KEY_A)) { offsetOrientation(vec3( 0.f, 0.f,  1.f), 0.00025f * delta); }
+  if (Keyboard::isKeyDown(KEY_D)) { offsetOrientation(vec3( 0.f, 0.f, -1.f), 0.00025f * delta); }
 
-  // Debug controls.
-  if (Keyboard::isKeyDown(KEY_R)) { light.ambient += 0.0001f * delta; }
-  if (Keyboard::isKeyDown(KEY_F)) { light.ambient -= 0.0001f * delta; }
+  if (Keyboard::isKeyDown(KEY_R)) { camera.position.z -= 0.0005f * Quadtree::minDistance * delta; }
+  if (Keyboard::isKeyDown(KEY_F)) { camera.position.z += 0.0005f * Quadtree::minDistance * delta; }
 
   Quadtree::minDistance = 65536.f;
 }
@@ -78,6 +88,8 @@ GLvoid Game::update() {
 
 GLvoid Game::render() {
   const vec3 lightDirection = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 1.f + cos(SDL_GetTicks() / 1000.f) * 2.f, -2.f));
+  mat4 view = translate(mat4(1.f), -camera.position);
+  view = view * mat4_cast(camera.orientation);
 
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClearDepth(1.f);
@@ -91,6 +103,7 @@ GLvoid Game::render() {
   glUseProgram(program);
 
   glUniform3fv(camera.positionUniform, 1, value_ptr(camera.position));
+  glUniformMatrix4fv(viewUniform,      1, GL_FALSE, value_ptr(view));
   glUniform3fv(light.directionUniform, 1, value_ptr(lightDirection));
   glUniform3fv(light.colorUniform,     1, value_ptr(light.color));
   glUniform1f( light.ambientUniform,      light.ambient);
@@ -101,4 +114,18 @@ GLvoid Game::render() {
   // glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   glUseProgram(0);
+}
+
+
+
+GLvoid Game::offsetOrientation(const vec3 axis, GLfloat angle) {
+  const GLfloat scalar = cosf(angle / 2.f);
+
+  vec3 naxis = normalize(axis);
+  naxis = naxis * sinf(angle / 2.f);
+
+  quat offset(scalar, naxis.x, naxis.y, naxis.z);
+
+  camera.orientation = camera.orientation * offset;
+  camera.orientation = normalize(camera.orientation);
 }

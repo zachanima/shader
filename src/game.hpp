@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp> // glm::value_ptr
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "lwcppgl/display.hpp"
 
@@ -26,8 +27,11 @@ class Game {
     static Camera camera;
     static Light light;
     static GLuint program;
+    static GLuint viewUniform;
     static Quadtree *quadtree;
     static Quadtree *water;
+    static GLvoid offsetOrientation(vec3, GLfloat);
+    static const mat4 lookAt(vec3, vec3, vec3);
 };
 
 #endif // GAME_HPP

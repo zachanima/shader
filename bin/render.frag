@@ -27,19 +27,4 @@ void main(void) {
   vec4 vDiffuse = vec4(light.diffuse * vec3(1.f, 1.f, 1.f) * diffuse, 1.f);
 
   color = texture2D(colormap, vertexTexture) * vec4(vAmbient * base + vDiffuse * base);
-
-  /*
-  vec4 ambientColor = vec4(light.color, 1.f) * light.ambient;
-  float diffuseFactor = dot(normalize(vertexNormal), -light.direction);
-  vec4 diffuseColor;
-
-  if (diffuseFactor > 0.f) {
-    diffuseColor = vec4(light.color, 1.f) * light.diffuse * diffuseFactor;
-  } else {
-    diffuseColor = vec4(0.f, 0.f, 0.f, 0.f);
-  }
-
-
-  color = texture2D(sampler, vertexTexture) * (ambientColor + diffuseColor);
-  */
 }
