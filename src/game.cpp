@@ -41,7 +41,7 @@ GLvoid Game::initialize() {
   colormapUniform =        glGetUniformLocation(program, "colormap");
   
   // Initialize camera.
-  camera.position = vec3(0.f, 0.f, 16.f);
+  camera.position = vec3(0.f, 0.f, 4.f);
 
   // Initialize light.
   light.direction = vec3(0.f, 0.f, 1.f);
@@ -75,8 +75,8 @@ GLvoid Game::update() {
   quadtree->update(camera.position);
   if (Keyboard::isKeyDown(KEY_W)) { offsetOrientation(vec3( 1.f, 0.f,  0.f), 0.00025f * delta); }
   if (Keyboard::isKeyDown(KEY_S)) { offsetOrientation(vec3(-1.f, 0.f,  0.f), 0.00025f * delta); }
-  if (Keyboard::isKeyDown(KEY_A)) { offsetOrientation(vec3( 0.f, 0.f,  1.f), 0.00025f * delta); }
-  if (Keyboard::isKeyDown(KEY_D)) { offsetOrientation(vec3( 0.f, 0.f, -1.f), 0.00025f * delta); }
+  if (Keyboard::isKeyDown(KEY_A)) { offsetOrientation(vec3( 0.f, 0.f,  1.f), 0.0005f * delta); }
+  if (Keyboard::isKeyDown(KEY_D)) { offsetOrientation(vec3( 0.f, 0.f, -1.f), 0.0005f * delta); }
 
   if (Keyboard::isKeyDown(KEY_R)) { camera.position.z -= 0.0005f * Quadtree::minDistance * delta; }
   if (Keyboard::isKeyDown(KEY_F)) { camera.position.z += 0.0005f * Quadtree::minDistance * delta; }
@@ -88,8 +88,8 @@ GLvoid Game::update() {
 
 GLvoid Game::render() {
   const vec3 lightDirection = normalize(vec3(1.f + sin(SDL_GetTicks() / 1000.f) * 2.f, 1.f + cos(SDL_GetTicks() / 1000.f) * 2.f, -2.f));
-  mat4 view = translate(mat4(1.f), -camera.position);
-  view = view * mat4_cast(camera.orientation);
+  mat4 view = mat4_cast(camera.orientation);
+  view = translate(view, -camera.position);
 
   glClearColor(0.f, 0.f, 0.f, 1.f);
   glClearDepth(1.f);
@@ -126,6 +126,12 @@ GLvoid Game::offsetOrientation(const vec3 axis, GLfloat angle) {
 
   quat offset(scalar, naxis.x, naxis.y, naxis.z);
 
-  camera.orientation = camera.orientation * offset;
+  mat4 cameraMatrix = glm::lookAt(camera.position, vec3(0.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f));
+  quat view = quat_cast(cameraMatrix);
+  quat invView = conjugate(view);
+
+  quat world = invView * offset * view;
+  camera.orientation = world * camera.orientation;
+
   camera.orientation = normalize(camera.orientation);
 }
