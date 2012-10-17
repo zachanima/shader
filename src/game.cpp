@@ -75,10 +75,15 @@ GLvoid Game::update() {
   quadtree->update(camera.position);
   if (Keyboard::isKeyDown(KEY_W)) { offsetOrientation(vec3( 1.f, 0.f,  0.f), 0.00025f * delta); }
   if (Keyboard::isKeyDown(KEY_S)) { offsetOrientation(vec3(-1.f, 0.f,  0.f), 0.00025f * delta); }
-  if (Keyboard::isKeyDown(KEY_A)) { offsetOrientation(vec3( 0.f, 0.f,  1.f), 0.0005f * delta); }
-  if (Keyboard::isKeyDown(KEY_D)) { offsetOrientation(vec3( 0.f, 0.f, -1.f), 0.0005f * delta); }
+  if (Keyboard::isKeyDown(KEY_A)) { offsetOrientation(vec3( 0.f, 0.f, -1.f), 0.0005f * delta); }
+  if (Keyboard::isKeyDown(KEY_D)) { offsetOrientation(vec3( 0.f, 0.f,  1.f), 0.0005f * delta); }
 
-  if (Keyboard::isKeyDown(KEY_R)) { camera.position.z -= 0.0005f * Quadtree::minDistance * delta; }
+  if (Keyboard::isKeyDown(KEY_R)) {
+    vec3 direction = vec3(0.f, 0.f, -1.f) * camera.orientation;
+    direction = normalize(direction);
+    direction *= 0.0005f * Quadtree::minDistance * delta;
+    camera.position += direction;
+  }
   if (Keyboard::isKeyDown(KEY_F)) { camera.position.z += 0.0005f * Quadtree::minDistance * delta; }
 
   Quadtree::minDistance = 65536.f;
