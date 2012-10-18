@@ -83,6 +83,7 @@ GLvoid Game::update() {
     direction = normalize(direction);
     direction *= 0.0005f * Quadtree::minDistance * delta;
     camera.position += direction;
+    camera.target += direction;
   }
   if (Keyboard::isKeyDown(KEY_F)) { camera.position.z += 0.0005f * Quadtree::minDistance * delta; }
 
@@ -131,7 +132,7 @@ GLvoid Game::offsetOrientation(const vec3 axis, GLfloat angle) {
 
   quat offset(scalar, naxis.x, naxis.y, naxis.z);
 
-  mat4 cameraMatrix = glm::lookAt(camera.position, vec3(0.f, 0.f, 0.f), vec3(0.f, 1.f, 0.f));
+  mat4 cameraMatrix = glm::lookAt(camera.position, camera.target, vec3(0.f, 1.f, 0.f));
   quat view = quat_cast(cameraMatrix);
   quat invView = conjugate(view);
 
