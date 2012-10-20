@@ -195,8 +195,9 @@ GLvoid Quadtree::computeVertexmap() {
   GLuint fbo;
   GLuint ibo;
   GLuint vbo;
+  GLuint pbo;
   GLuint vertexmap;
-  GLfloat ps[VERTICES];
+  GLfloat *ps; // = new GLfloat[VERTICES];
 
   // Initialize vertexmap texture.
   glEnable(GL_TEXTURE_2D);
@@ -245,17 +246,23 @@ GLvoid Quadtree::computeVertexmap() {
 
   // Read vertexmap pixel data.
   // FIXME: glReadPixels is current bottleneck.
-  glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RED, GL_FLOAT, ps);
+  glGenBuffers(1, &pbo);
+  glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+  glBufferData(GL_PIXEL_PACK_BUFFER, VERTICES * 4, NULL, GL_STREAM_READ);
+  glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RED, GL_FLOAT, 0);
+  ps = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
   for (size_t i = 0; i < VERTICES; i++) {
     const GLfloat noise = 1.f + ps[i] / 16.f;
     this->vs[i].r *= noise;
   }
 
-  // Unbind framebuffer object, delete buffers and texture.
+  // Unmap pixel buffer object, unbind framebuffer object, delete buffers and texture.
+  glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDeleteFramebuffers(1, &fbo);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ibo);
+  glDeleteBuffers(1, &pbo);
   glDeleteTextures(1, &vertexmap);
 }
 
