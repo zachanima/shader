@@ -10,11 +10,18 @@ GLuint Quadtree::colormapProgram;
 
 Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level) {
   const GLfloat L = (a2 - a1) / CHUNK_SIZE;
+  GLuint pbo; // Pixel buffer object for vertexmap.
 
   box[0] = a1;
   box[1] = b1;
   box[2] = a2;
   box[3] = b2;
+
+  generateVertexmap(&pbo);
+  generateHeightmap();
+  generateNormalmap(level);
+  generateColormap();
+
   this->level = level;
 
   // Nullify children.
@@ -72,10 +79,7 @@ Quadtree::Quadtree(GLfloat a1, GLfloat b1, GLfloat a2, GLfloat b2, GLuint level)
     vs[v].n = normalize(vs[v].n);
   }
 
-  computeVertexmap();
-  generateHeightmap();
-  generateNormalmap(level);
-  generateColormap();
+  readVertexmap(&pbo);
 
   // Delete heightmap texture.
   glDeleteTextures(1, &heightmap);
@@ -181,7 +185,7 @@ GLvoid Quadtree::render() {
 
 
 
-GLvoid Quadtree::computeVertexmap() {
+GLvoid Quadtree::generateVertexmap(GLuint *pbo) {
   const GLuint meshPositionUniform = glGetUniformLocation(vertexmapProgram, "meshPosition");
   const GLuint meshLengthUniform =   glGetUniformLocation(vertexmapProgram, "meshLength");
   const GLenum buffers[] = { GL_COLOR_ATTACHMENT0 };
@@ -195,9 +199,7 @@ GLvoid Quadtree::computeVertexmap() {
   GLuint fbo;
   GLuint ibo;
   GLuint vbo;
-  GLuint pbo;
   GLuint vertexmap;
-  GLfloat *ps; // = new GLfloat[VERTICES];
 
   // Initialize vertexmap texture.
   glEnable(GL_TEXTURE_2D);
@@ -246,23 +248,16 @@ GLvoid Quadtree::computeVertexmap() {
 
   // Read vertexmap pixel data.
   // FIXME: glReadPixels is current bottleneck.
-  glGenBuffers(1, &pbo);
-  glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+  glGenBuffers(1, pbo);
+  glBindBuffer(GL_PIXEL_PACK_BUFFER, *pbo);
   glBufferData(GL_PIXEL_PACK_BUFFER, VERTICES * 4, NULL, GL_STREAM_READ);
   glReadPixels(0, 0, VERTICES_PER_SIDE, VERTICES_PER_SIDE, GL_RED, GL_FLOAT, 0);
-  ps = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
-  for (size_t i = 0; i < VERTICES; i++) {
-    const GLfloat noise = 1.f + ps[i] / 16.f;
-    this->vs[i].r *= noise;
-  }
 
-  // Unmap pixel buffer object, unbind framebuffer object, delete buffers and texture.
-  glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+  // Unbind framebuffer object, delete buffers and texture.
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDeleteFramebuffers(1, &fbo);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ibo);
-  glDeleteBuffers(1, &pbo);
   glDeleteTextures(1, &vertexmap);
 }
 
@@ -475,6 +470,24 @@ GLvoid Quadtree::generateColormap() {
   glDeleteFramebuffers(1, &fbo);
   glDeleteBuffers(1, &vbo);
   glDeleteBuffers(1, &ibo);
+}
+
+
+
+GLvoid Quadtree::readVertexmap(GLuint *pbo) {
+  GLfloat *ps;
+
+  glBindBuffer(GL_PIXEL_PACK_BUFFER, *pbo);
+  ps = (GLfloat *)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+
+  for (size_t i = 0; i < VERTICES; i++) {
+    const GLfloat noise = 1.f + ps[i] / 16.f;
+    this->vs[i].r *= noise;
+  }
+
+  // Unmap pixel buffer object, unbind framebuffer object, delete buffers and texture.
+  glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
+  glDeleteBuffers(1, pbo);
 }
 
 

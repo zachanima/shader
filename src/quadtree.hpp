@@ -40,10 +40,11 @@ class Quadtree {
     GLuint heightmap;
     GLuint normalmap;
     GLuint colormap;
-    GLvoid computeVertexmap();
+    GLvoid generateVertexmap(GLuint *);
     GLvoid generateHeightmap();
     GLvoid generateNormalmap(GLuint);
     GLvoid generateColormap();
+    GLvoid readVertexmap(GLuint *);
     GLvoid divide();
     const GLfloat distance2(vec3);
     const static vec3 spherize(vec3);
